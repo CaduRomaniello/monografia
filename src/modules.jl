@@ -17,6 +17,9 @@ using PyCall
 # Local Modules
 
 include("lib/problemStructs.jl")
+include("lib/solutionStructs.jl")
+include("movements/allocate.jl")
 include("functions/auxiliarFunctions.jl")
 include("functions/readFunctions.jl")
+include("functions/heuristics.jl")
 include("pas.jl")

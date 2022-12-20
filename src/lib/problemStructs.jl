@@ -99,3 +99,22 @@ mutable struct Reservation
     dayOfWeek::Int64
     scheduleID::Int64
 end
+
+mutable struct Problem
+
+    schedules::Array{Schedule, 1}
+    buildings::Array{Building, 1}
+    classrooms::Array{Classroom, 1}
+    professors::Array{Professor, 1}
+    subjects::Array{Subject, 1}
+    classes::Array{Class, 1}
+    meetings::Array{Meeting, 1}
+    preferences::Array{Preference, 1}
+    restrictions::Array{Restriction, 1}
+    reservations::Array{Reservation, 1}
+
+    instanceName::String
+    maxTime::Int64
+    seed::Int64
+
+end
