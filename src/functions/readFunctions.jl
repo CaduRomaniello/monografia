@@ -9,7 +9,7 @@ function readSchedules(data, schedules::Array{Schedule, 1})
         startTime = stringToTime(startTimeDescription)
         endTime = stringToTime(endTimeDescription)
 
-        schedule = Schedule(i, ID, startTimeDescription, endTimeDescription, startTime, endTime)
+        schedule = Schedule(ID, startTimeDescription, endTimeDescription, startTime, endTime)
 
         push!(schedules, schedule)
 
@@ -24,7 +24,7 @@ function readBuidings(problemData, buildings::Array{Building, 1})
         ID = problemData["buildings"][i]["ID"]
         name = problemData["buildings"][i]["name"]
 
-        building = Building(i, ID, name)
+        building = Building(ID, name)
 
         push!(buildings, building)
 
@@ -45,7 +45,7 @@ function readClassrooms(problemData, classrooms::Array{Classroom, 1})
         board = problemData["classrooms"][i]["board"]
         projector = problemData["classrooms"][i]["projector"]
 
-        classroom = Classroom(i, ID, isLab, capacity, buildingID, description, floor, board, projector)
+        classroom = Classroom(ID, isLab, capacity, buildingID, description, floor, board, projector)
 
         push!(classrooms, classroom)
 
@@ -57,10 +57,10 @@ function readProfessors(problemData, professors::Array{Professor, 1})
 
     for i = 1:length(problemData["professors"])
 
-        ID = problemData["professors"][i]["ID"]
+        code = problemData["professors"][i]["code"]
         name = problemData["professors"][i]["name"]
 
-        professor = Professor(i, ID, name)
+        professor = Professor(i, code, name)
 
         push!(professors, professor)
 
@@ -72,10 +72,10 @@ function readSubjects(problemData, subjects::Array{Subject, 1})
 
     for i = 1:length(problemData["subjects"])
 
-        ID = problemData["subjects"][i]["ID"]
+        code = problemData["subjects"][i]["code"]
         name = problemData["subjects"][i]["name"]
 
-        subject = Subject(i, ID, name)
+        subject = Subject(i, code, name)
 
         push!(subjects, subject)
 
@@ -87,8 +87,8 @@ function readClasses(problemData, classes::Array{Class, 1})
 
     for i = 1:length(problemData["classes"])
 
-        subjectID = problemData["classes"][i]["subjectID"]
-        classID = problemData["classes"][i]["classID"]
+        subjectCode = problemData["classes"][i]["subjectCode"]
+        classCode = problemData["classes"][i]["classCode"]
         vacancies = problemData["classes"][i]["vacancies"]
         demand = problemData["classes"][i]["demand"]
         professors = []
@@ -96,7 +96,7 @@ function readClasses(problemData, classes::Array{Class, 1})
             push!(professors, problemData["classes"][i]["professors"][j])
         end
 
-        class = Class(i, subjectID, classID, vacancies, demand, professors)
+        class = Class(i, subjectCode, classCode, vacancies, demand, professors)
 
         push!(classes, class)
 
@@ -110,17 +110,17 @@ function readMeetings(problemData, meetings::Array{Meeting, 1})
 
         isPractical = problemData["meetings"][i]["isPractical"]
         dayOfWeek = problemData["meetings"][i]["dayOfWeek"]
-        subjectID = problemData["meetings"][i]["subjectID"]
-        classesIDs = []
-        for j = 1:length(problemData["meetings"][i]["classesIDs"])
-            push!(classesIDs, problemData["meetings"][i]["classesIDs"][j])
+        subjectCode = problemData["meetings"][i]["subjectCode"]
+        classesCodes = []
+        for j = 1:length(problemData["meetings"][i]["classesCodes"])
+            push!(classesCodes, problemData["meetings"][i]["classesCodes"][j])
         end
         schedules = []
         for j = 1:length(problemData["meetings"][i]["schedules"])
             push!(schedules, problemData["meetings"][i]["schedules"][j])
         end
 
-        meeting = Meeting(i, isPractical, dayOfWeek, subjectID, classesIDs, schedules)
+        meeting = Meeting(i, isPractical, dayOfWeek, subjectCode, classesCodes, schedules)
 
         push!(meetings, meeting)
 

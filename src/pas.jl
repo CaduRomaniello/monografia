@@ -145,7 +145,7 @@ function pas(FILE1::String, maxTime::Int64, seed::Int64)
 
     end_greedy = Dates.now()
 
-    printstyled("Finish reading instance at: ", bold = true, color = :yellow)
+    printstyled("Finish greedy algorithm at: ", bold = true, color = :yellow)
     print(Dates.day(end_greedy), "/", Dates.month(end_greedy), "/", Dates.year(end_greedy), " ")
     println(Dates.hour(end_greedy), ":", Dates.minute(end_greedy), ":", Dates.second(end_greedy))
     println("----------------------------------------------------------------------------------")

@@ -7,14 +7,15 @@ function greedy(solution::Solution, problem::Problem)
 
     copyClassrooms = deepcopy(problem.classrooms)
     sizeClassrooms = length(copyClassrooms)
-    sort!(copyClassrooms, rev = false, alg = MergeSort, by = x -> x.capacity)
+    sort!(copyClassrooms, rev = true, alg = MergeSort, by = x -> x.capacity)
     # println(copyClassrooms[1])
     # println()
     
     copyMeetings = deepcopy(solution.meetings)
     sizeMeetings = length(copyMeetings)
-    sort!(copyMeetings, rev = false, alg = MergeSort, by = x -> x.demand)
-    # println(copyMeetings[1])
+    sort!(copyMeetings, rev = true, alg = MergeSort, by = x -> x.demand)
+    # println(copyMeetings[1].demand)
+    # println(copyMeetings[2].demand)
     # println()
 
     for i in eachindex(copyMeetings)
@@ -37,7 +38,7 @@ function greedy(solution::Solution, problem::Problem)
         end
 
         for j in eachindex(copyClassrooms)
-            if (verifyClassroomAvailability(move.day, copyClassrooms[j].position, copyMeetings[i].schedules))
+            if (verifyClassroomAvailability(move.day, copyClassrooms[j].ID, copyMeetings[i].schedules))
                 if (checkRestrictions(copyMeetings[i].restrictions, copyClassrooms[j]))
                     move.classroom = copyClassrooms[j]
                     move.allowed = true
@@ -57,7 +58,7 @@ function greedy(solution::Solution, problem::Problem)
     end
 
     for i in eachindex(copyMeetings)
-        id = copyMeetings[i].position
+        id = copyMeetings[i].ID
         solution.meetings[id] = deepcopy(copyMeetings[i])
     end
 

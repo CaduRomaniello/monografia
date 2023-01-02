@@ -44,7 +44,7 @@ function startMove(move::Allocate, solution::Solution, problem::Problem)
 
     for i = 1:length(move.day.meetings)
         if (move.day.meetings[meetingCount].classroomID == 0)
-            meetingCode = move.day.meetings[meetingCount].position
+            meetingCode = move.day.meetings[meetingCount].ID
             break
         end
 
@@ -62,7 +62,7 @@ function startMove(move::Allocate, solution::Solution, problem::Problem)
     classroomCount = rand(1:sizeClassrooms)
 
     for  i = 1:classroomCount
-        if (verifyClassroomAvailability(move.day, classrooms[classroomCount].position, meetings[meetingCode].schedules))
+        if (verifyClassroomAvailability(move.day, classrooms[classroomCount].ID, meetings[meetingCode].schedules))
             if (checkRestrictions(meetings[meetingCode].restrictions, classrooms[classroomCount]))
                 move.meeting = meetings[meetingCode]
                 move.classroom = classrooms[classroomCount]
@@ -117,7 +117,7 @@ function acceptMove(move::Allocate)
     schedules = move.meeting.schedules
 
     for i in eachindex(schedules)
-        day.matrix[schedules[i].ID, move.classroom.ID].meetingCode = move.meeting.position
+        day.matrix[schedules[i].ID, move.classroom.ID].meetingCode = move.meeting.ID
         day.matrix[schedules[i].ID, move.classroom.ID].status = 1
     end
 

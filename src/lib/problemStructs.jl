@@ -3,8 +3,6 @@ stringOrNothing = Union{String, Nothing}
 boolOrNothing = Union{Bool, Nothing}
 
 mutable struct Schedule
-    position::Int64
-
     ID::Int64
     startTimeDescription::String
     endTimeDescription::String
@@ -12,20 +10,16 @@ mutable struct Schedule
     startTime::Time
     endTime::Time
 
-    Schedule(position::Int64, ID::Int64, startTimeDescription::String, endTimeDescription::String) = new(position, ID, startTimeDescription, endTimeDescription)
-    Schedule(position::Int64, ID::Int64, startTimeDescription::String, endTimeDescription::String, startTime::Time, endTime::Time) = new(position, ID, startTimeDescription, endTimeDescription, startTime, endTime)
+    Schedule(ID::Int64, startTimeDescription::String, endTimeDescription::String) = new(ID, startTimeDescription, endTimeDescription)
+    Schedule(ID::Int64, startTimeDescription::String, endTimeDescription::String, startTime::Time, endTime::Time) = new(ID, startTimeDescription, endTimeDescription, startTime, endTime)
 end
 
 mutable struct Building
-    position::Int64
-
     ID::Int64
     name::String
 end
 
 mutable struct Classroom
-    position::Int64
-    
     ID::Int64
     isLab::Bool
     capacity::Int64
@@ -37,41 +31,41 @@ mutable struct Classroom
 end
 
 mutable struct Professor
-    position::Int64
+    ID::Int64
 
-    ID::String
+    code::String
     name::String
 end
 
 mutable struct Subject
-    position::Int64
+    ID::Int64
 
-    ID::String
+    code::String
     name::String
 end
 
 mutable struct Class
-    position::Int64
+    ID::Int64
 
-    subjectID::String
-    classID::String
+    subjectCode::String
+    classCode::String
     vacancies::Int64
     demand::Int64
     professors::Array{String, 1}
 end
 
 mutable struct Meeting
-    position::Int64
+    ID::Int64
 
     isPractical::Bool
     dayOfWeek::Int64
-    subjectID::String
-    classesIDs::Array{String, 1}
+    subjectCode::String
+    classesCodes::Array{String, 1}
     schedules::Array{Int, 1}
 end
 
 mutable struct Preference
-    position::Int64
+    ID::Int64
 
     category::String
     categoryCode::String
@@ -82,7 +76,7 @@ mutable struct Preference
 end
 
 mutable struct Restriction
-    position::Int64
+    ID::Int64
 
     category::String
     categoryCode::String
@@ -93,7 +87,7 @@ mutable struct Restriction
 end
 
 mutable struct Reservation
-    position::Int64
+    ID::Int64
 
     classroomID::Int64
     dayOfWeek::Int64

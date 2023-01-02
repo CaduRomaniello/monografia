@@ -1,6 +1,6 @@
 mutable struct SolutionMeeting
 
-    position::Int64
+    ID::Int64
 
     isPractical::Bool
     dayOfWeek::Int64

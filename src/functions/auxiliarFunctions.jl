@@ -82,7 +82,7 @@ function createSolutionMeetings(problem::Problem)
     for i in eachindex(problem.meetings)
 
         # push to SolutionMeeting Array
-        push!(x, SolutionMeeting(i, problem.meetings[i].isPractical, problem.meetings[i].dayOfWeek, problem.meetings[i].subjectID, problem.meetings[i].classesIDs, [], 0, 0, [], "", 0, 0, [], []))
+        push!(x, SolutionMeeting(i, problem.meetings[i].isPractical, problem.meetings[i].dayOfWeek, problem.meetings[i].subjectCode, problem.meetings[i].classesCodes, [], 0, 0, [], "", 0, 0, [], []))
 
         # push each schedule into SolutionMeeting
         for j in eachindex(problem.meetings[i].schedules)
@@ -90,10 +90,10 @@ function createSolutionMeetings(problem::Problem)
         end
 
         # finding all the classes tha t this meeting have
-        for j in eachindex(problem.meetings[i].classesIDs)
-            meetingCode = string(problem.meetings[i].subjectID, "-", problem.meetings[i].classesIDs[j])
+        for j in eachindex(problem.meetings[i].classesCodes)
+            meetingCode = string(problem.meetings[i].subjectCode, "-", problem.meetings[i].classesCodes[j])
             for k in eachindex(problem.classes)
-                classCode = string(problem.classes[k].subjectID, "-", problem.classes[k].classID)
+                classCode = string(problem.classes[k].subjectCode, "-", problem.classes[k].classCode)
 
                 if meetingCode == classCode
                     # println(meetingCode, " / ", classCode)
