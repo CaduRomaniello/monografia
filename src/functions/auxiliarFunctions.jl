@@ -89,7 +89,7 @@ function createSolutionMeetings(problem::Problem)
             push!(x[i].schedules, problem.schedules[problem.meetings[i].schedules[j]])
         end
 
-        # finding all the classes tha t this meeting have
+        # finding all the classes that this meeting have
         for j in eachindex(problem.meetings[i].classesCodes)
             meetingCode = string(problem.meetings[i].subjectCode, "-", problem.meetings[i].classesCodes[j])
             for k in eachindex(problem.classes)
@@ -100,11 +100,13 @@ function createSolutionMeetings(problem::Problem)
                     x[i].vacancies += problem.classes[k].vacancies
                     x[i].demand += problem.classes[k].demand
 
+                    # finding all professors for this meeting
                     for m in eachindex(problem.classes[k].professors)
                         for n in eachindex(problem.professors)
                             if problem.classes[k].professors[m] == problem.professors[n].ID
                                 push!(x[i].professors, problem.professors[n])
 
+                                # finding all professor preferences for this meeting
                                 for t in eachindex(problem.preferences)
                                     if problem.professors[n].ID == problem.preferences[t].categoryCode
                                         push!(x[i].preferences, problem.preferences[t])
@@ -112,6 +114,7 @@ function createSolutionMeetings(problem::Problem)
                                     end
                                 end
                     
+                                # finding all professor restrictions for this meeting
                                 for t in eachindex(problem.restrictions)
                                     if problem.professors[n].ID == problem.restrictions[t].categoryCode
                                         push!(x[i].restrictions, problem.restrictions[t])
@@ -128,6 +131,7 @@ function createSolutionMeetings(problem::Problem)
                 end
             end
 
+            # finding all class preferences for this meeting
             for k in eachindex(problem.preferences)
                 if meetingCode == problem.preferences[k].categoryCode
                     push!(x[i].preferences, problem.preferences[k])
@@ -135,6 +139,7 @@ function createSolutionMeetings(problem::Problem)
                 end
             end
 
+            # finding all class restrictions for this meeting
             for k in eachindex(problem.restrictions)
                 if meetingCode == problem.restrictions[k].categoryCode
                     push!(x[i].restrictions, problem.restrictions[k])
@@ -285,5 +290,154 @@ function calculatePreferenceObjective(move::Allocate)
             end
         end
         return x
+    end
+end
+
+"""
+Checks if meetings are correctly allocated in a classroom
+"""
+function checkAllocation(solution::Solution)
+    for i in eachindex(solution.meetings)
+        for j in eachindex(solution.meetings[i].schedules)
+            classroomID = solution.meetings[i].classroomID
+            if classroomID == 0
+                continue
+            end
+
+            if solution.meetings[i].dayOfWeek == 2
+                if solution.monday.matrix[solution.meetings[i].schedules[j].ID, classroomID].meetingID != solution.meetings[i].ID
+                    println("Meeting with ID $(solution.meetings[i].ID) is allocated in the classroom with ID $(classroomID) but it isn't allocated in the monday solution matrix!")
+                    exit(1)
+                end
+            elseif solution.meetings[i].dayOfWeek == 3
+                if solution.thursday.matrix[solution.meetings[i].schedules[j].ID, classroomID].meetingID != solution.meetings[i].ID
+                    println("Meeting with ID $(solution.meetings[i].ID) is allocated in the classroom with ID $(classroomID) but it isn't allocated in the thursday solution matrix!")
+                    exit(1)
+                end
+            elseif solution.meetings[i].dayOfWeek == 4
+                if solution.wednesday.matrix[solution.meetings[i].schedules[j].ID, classroomID].meetingID != solution.meetings[i].ID
+                    println("Meeting with ID $(solution.meetings[i].ID) is allocated in the classroom with ID $(classroomID) but it isn't allocated in the wednesday solution matrix!")
+                    exit(1)
+                end
+            elseif solution.meetings[i].dayOfWeek == 5
+                if solution.tuesday.matrix[solution.meetings[i].schedules[j].ID, classroomID].meetingID != solution.meetings[i].ID
+                    println("Meeting with ID $(solution.meetings[i].ID) is allocated in the classroom with ID $(classroomID) but it isn't allocated in the tuesday solution matrix!")
+                    exit(1)
+                end
+            elseif solution.meetings[i].dayOfWeek == 6
+                if solution.friday.matrix[solution.meetings[i].schedules[j].ID, classroomID].meetingID != solution.meetings[i].ID
+                    println("Meeting with ID $(solution.meetings[i].ID) is allocated in the classroom with ID $(classroomID) but it isn't allocated in the friday solution matrix!")
+                    exit(1)
+                end
+            elseif solution.meetings[i].dayOfWeek == 7
+                if solution.saturday.matrix[solution.meetings[i].schedules[j].ID, classroomID].meetingID != solution.meetings[i].ID
+                    println("Meeting with ID $(solution.meetings[i].ID) is allocated in the classroom with ID $(classroomID) but it isn't allocated in the saturday solution matrix!")
+                    exit(1)
+                end
+            else
+            end
+        end
+    end
+
+    # monday check
+    for row in eachrow(solution.monday.matrix)
+        for col in eachindex(row)
+            if row[col].meetingID != 0
+                if row[col].meetingID != solution.meetings[row[col].meetingID].ID
+                    println("ERROR: meetings ID's doesn't match!")
+                    exit(1)
+                end
+                allocation = solution.meetings[row[col].meetingID].classroomID
+                if allocation != col
+                    println("Meeting with ID $(row[col].meetingID) is allocated in monday solution matrix at classroom $(col) but is registered at classroom with ID $(allocation)!")
+                    exit(1)
+                end
+            end
+        end
+    end
+
+    # thursday check
+    for row in eachrow(solution.thursday.matrix)
+        for col in eachindex(row)
+            if row[col].meetingID != 0
+                if row[col].meetingID != solution.meetings[row[col].meetingID].ID
+                    println("ERROR: meetings ID's doesn't match!")
+                    exit(1)
+                end
+                allocation = solution.meetings[row[col].meetingID].classroomID
+                if allocation != col
+                    println("Meeting with ID $(row[col].meetingID) is allocated in thursday solution matrix at classroom $(col) but is registered at classroom with ID $(allocation)!")
+                    exit(1)
+                end
+            end
+        end
+    end
+
+    # wednesday check
+    for row in eachrow(solution.wednesday.matrix)
+        for col in eachindex(row)
+            if row[col].meetingID != 0
+                if row[col].meetingID != solution.meetings[row[col].meetingID].ID
+                    println("ERROR: meetings ID's doesn't match!")
+                    exit(1)
+                end
+                allocation = solution.meetings[row[col].meetingID].classroomID
+                if allocation != col
+                    println("Meeting with ID $(row[col].meetingID) is allocated in wednesday solution matrix at classroom $(col) but is registered at classroom with ID $(allocation)!")
+                    exit(1)
+                end
+            end
+        end
+    end
+
+    # tuesday check
+    for row in eachrow(solution.tuesday.matrix)
+        for col in eachindex(row)
+            if row[col].meetingID != 0
+                if row[col].meetingID != solution.meetings[row[col].meetingID].ID
+                    println("ERROR: meetings ID's doesn't match!")
+                    exit(1)
+                end
+                allocation = solution.meetings[row[col].meetingID].classroomID
+                if allocation != col
+                    println("Meeting with ID $(row[col].meetingID) is allocated in tuesday solution matrix at classroom $(col) but is registered at classroom with ID $(allocation)!")
+                    exit(1)
+                end
+            end
+        end
+    end
+
+    # friday check
+    for row in eachrow(solution.friday.matrix)
+        for col in eachindex(row)
+            if row[col].meetingID != 0
+                if row[col].meetingID != solution.meetings[row[col].meetingID].ID
+                    println("ERROR: meetings ID's doesn't match!")
+                    exit(1)
+                end
+                allocation = solution.meetings[row[col].meetingID].classroomID
+                if allocation != col
+                    println("Meeting with ID $(row[col].meetingID) is allocated in friday solution matrix at classroom $(col) but is registered at classroom with ID $(allocation)!")
+                    exit(1)
+                end
+            end
+        end
+    end
+
+    # saturday check
+    for row in eachrow(solution.saturday.matrix)
+        for col in eachindex(row)
+            if row[col].meetingID != 0
+                if row[col].meetingID != solution.meetings[row[col].meetingID].ID
+                    println("ERROR: meetings ID's doesn't match!")
+                    exit(1)
+                end
+                allocation = solution.meetings[row[col].meetingID].classroomID
+                if allocation != col
+                    println("Meeting with ID $(row[col].meetingID) is allocated in saturday solution matrix at classroom $(col) but is registered at classroom with ID $(allocation)!")
+                    exit(1)
+                end
+            end
+        end
     end
 end

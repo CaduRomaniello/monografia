@@ -117,7 +117,7 @@ function acceptMove(move::Allocate)
     schedules = move.meeting.schedules
 
     for i in eachindex(schedules)
-        day.matrix[schedules[i].ID, move.classroom.ID].meetingCode = move.meeting.ID
+        day.matrix[schedules[i].ID, move.classroom.ID].meetingID = move.meeting.ID
         day.matrix[schedules[i].ID, move.classroom.ID].status = 1
     end
 

@@ -25,7 +25,7 @@ end
 mutable struct Cell
 
     status::Int64 # 0 -> deallocated, 1 -> allocated, 2 -> reserved
-    meetingCode::Int64
+    meetingID::Int64
 
 end
 

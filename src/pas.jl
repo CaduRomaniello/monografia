@@ -150,11 +150,14 @@ function pas(FILE1::String, maxTime::Int64, seed::Int64)
     println(Dates.hour(end_greedy), ":", Dates.minute(end_greedy), ":", Dates.second(end_greedy))
     println("----------------------------------------------------------------------------------")
 
-    output = open("../output/result.json", "w")
+    # checks allocations made by the greedy algorithm
+    checkAllocation(solution)
 
-    final_dict = OrderedDict("objectives" => solution.objectives, "meetings" => solution.meetings)
-    data = JSON.json(final_dict)
-    write(output, data)
-    close(output)
+    # output = open("../output/result.json", "w")
+
+    # final_dict = OrderedDict("objectives" => solution.objectives, "meetings" => solution.meetings)
+    # data = JSON.json(final_dict)
+    # write(output, data)
+    # close(output)
 
 end
