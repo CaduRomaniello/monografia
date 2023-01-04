@@ -15,6 +15,8 @@ mutable struct Allocate
 end
 
 function startMove(move::Allocate, solution::Solution, problem::Problem)
+    move.allowed = false
+
 
     sizeClassrooms = length(problem.classrooms)
     meetings = solution.meetings

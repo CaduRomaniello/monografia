@@ -448,12 +448,14 @@ Test movements
 function testMovements(solution, problem)
     allocate = Allocate()
     shift = Shift()
+    swap = Swap()
 
-    println("$(solution.meetings[1].ID), $(solution.meetings[1].dayOfWeek), $(solution.meetings[1].schedules), $(solution.meetings[1].classroomID)")
-    println()
-    println("$(solution.thursday.matrix[2, 1]), $(solution.thursday.matrix[3, 1])")
-    println("$(solution.thursday.matrix[2, 2]), $(solution.thursday.matrix[3, 2])")
+    # println("$(solution.meetings[1].ID), $(solution.meetings[1].dayOfWeek), $(solution.meetings[1].schedules), $(solution.meetings[1].classroomID)")
+    # println()
+    # println("$(solution.thursday.matrix[2, 1]), $(solution.thursday.matrix[3, 1])")
+    # println("$(solution.thursday.matrix[2, 2]), $(solution.thursday.matrix[3, 2])")
     
+    println(solution.objectives)
     allocate.allowed = false
     allocate.classroom = problem.classrooms[1]
     allocate.day = solution.thursday
@@ -461,25 +463,89 @@ function testMovements(solution, problem)
     allocate.objectives = solution.objectives
     returnAllocate = doMove(allocate)
     acceptMove(allocate)
+    solution.objectives = deepcopy(returnAllocate)
+
+    println(solution.meetings[1].demand, ", ", problem.classrooms[1].capacity)
 
     println()
-    println("$(solution.meetings[1].ID), $(solution.meetings[1].dayOfWeek), $(solution.meetings[1].schedules), $(solution.meetings[1].classroomID)")
-    println()
-    println("$(solution.thursday.matrix[2, 1]), $(solution.thursday.matrix[3, 1])")
-    println("$(solution.thursday.matrix[2, 2]), $(solution.thursday.matrix[3, 2])")
+    println(solution.objectives)
 
-    shift.allowed = false
-    shift.classroom_destination = problem.classrooms[2]
-    shift.classroom_origin = problem.classrooms[1]
-    shift.day = solution.thursday
-    shift.meeting = solution.meetings[1]
-    shift.objectives = solution.objectives
-    returnShift = doMove(shift)
-    acceptMove(shift)
+    # println()
+    # println("$(solution.meetings[1].ID), $(solution.meetings[1].dayOfWeek), $(solution.meetings[1].schedules), $(solution.meetings[1].classroomID)")
+    # println()
+    # println("$(solution.thursday.matrix[2, 1]), $(solution.thursday.matrix[3, 1])")
+    # println("$(solution.thursday.matrix[2, 2]), $(solution.thursday.matrix[3, 2])")
+
+    # ================================================================================
+    # shift movement
+    # ================================================================================
+
+    # shift.allowed = false
+    # shift.classroom_destination = problem.classrooms[2]
+    # shift.classroom_origin = problem.classrooms[1]
+    # shift.day = solution.thursday
+    # shift.meeting = solution.meetings[1]
+    # shift.objectives = solution.objectives
+    # returnShift = doMove(shift)
+    # acceptMove(shift)
+    # solution.objectives = deepcopy(returnShift)
+
+    # println()
+    # println(solution.objectives)
+
+    # # println()
+    # # println("$(solution.meetings[1].ID), $(solution.meetings[1].dayOfWeek), $(solution.meetings[1].schedules), $(solution.meetings[1].classroomID)")
+    # # println()
+    # # println("$(solution.thursday.matrix[2, 1]), $(solution.thursday.matrix[3, 1])")
+    # # println("$(solution.thursday.matrix[2, 2]), $(solution.thursday.matrix[3, 2])")
+
+    # ================================================================================
+    # ================================================================================
+    # ================================================================================
 
     println()
-    println("$(solution.meetings[1].ID), $(solution.meetings[1].dayOfWeek), $(solution.meetings[1].schedules), $(solution.meetings[1].classroomID)")
+    println(solution.objectives)
+
+    allocate.allowed = false
+    allocate.classroom = problem.classrooms[2]
+    allocate.day = solution.thursday
+    allocate.meeting = solution.meetings[23]
+    allocate.objectives = solution.objectives
+    returnAllocate = doMove(allocate)
+    acceptMove(allocate)
+    solution.objectives = deepcopy(returnAllocate)
+
+    println(solution.meetings[23].demand, ", ", problem.classrooms[2].capacity)
+
     println()
-    println("$(solution.thursday.matrix[2, 1]), $(solution.thursday.matrix[3, 1])")
-    println("$(solution.thursday.matrix[2, 2]), $(solution.thursday.matrix[3, 2])")
+    println(solution.objectives)
+
+    # println()
+    # println("$(solution.meetings[23].ID), $(solution.meetings[23].dayOfWeek), $(solution.meetings[23].schedules), $(solution.meetings[23].classroomID)")
+    # println()
+    # println("$(solution.thursday.matrix[2, 2]), $(solution.thursday.matrix[3, 2])")
+
+    swap.allowed = false
+    swap.classroom_1 = problem.classrooms[1]
+    swap.classroom_2 = problem.classrooms[2]
+    swap.day = solution.thursday
+    swap.meeting_1 = solution.meetings[1]
+    swap.meeting_2 = solution.meetings[23]
+    swap.objectives = solution.objectives
+    returnSwap = doMove(swap)
+    acceptMove(swap)
+    solution.objectives = deepcopy(returnSwap)
+
+    println(solution.meetings[1].demand, ", ", problem.classrooms[1].capacity)
+    println(solution.meetings[23].demand, ", ", problem.classrooms[2].capacity)
+
+    println()
+    println(solution.objectives)
+
+    # println()
+    # println("$(solution.meetings[1].ID), $(solution.meetings[1].dayOfWeek), $(solution.meetings[1].schedules), $(solution.meetings[1].classroomID)")
+    # println("$(solution.meetings[23].ID), $(solution.meetings[23].dayOfWeek), $(solution.meetings[23].schedules), $(solution.meetings[23].classroomID)")
+    # println()
+    # println("$(solution.thursday.matrix[2, 1]), $(solution.thursday.matrix[3, 1])")
+    # println("$(solution.thursday.matrix[2, 2]), $(solution.thursday.matrix[3, 2])")
 end

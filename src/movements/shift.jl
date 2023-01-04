@@ -16,6 +16,8 @@ mutable struct Shift
 end
 
 function startMove(move::Shift, solution::Solution, problem::Problem)
+    move.allowed = false
+
 
     sizeClassrooms = length(problem.classrooms)
     meetings = solution.meetings

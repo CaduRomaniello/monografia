@@ -141,8 +141,20 @@ function pas(FILE1::String, maxTime::Int64, seed::Int64)
     Greedy algorithm
     =================================================================================================#
 
-    greedy(solution, problem)
-    # testMovements(solution, problem)
+    # println(length(solution.thursday.meetings))
+    # for i in eachindex(solution.thursday.meetings)
+    #     if i == 1
+    #         continue
+    #     end
+    #     if solution.thursday.meetings[1].schedules == solution.thursday.meetings[i].schedules
+    #         println("da pra comparar $i")
+    #     end
+    # end
+    # println(solution.thursday.meetings[1].ID, ", ", solution.thursday.meetings[1].schedules)
+    # println(solution.thursday.meetings[8].ID, ", ", solution.thursday.meetings[8].schedules)
+
+    # greedy(solution, problem)
+    testMovements(solution, problem)
 
     end_greedy = Dates.now()
 
