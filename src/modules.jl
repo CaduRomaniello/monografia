@@ -18,6 +18,7 @@ using PyCall
 
 include("lib/problemStructs.jl")
 include("lib/solutionStructs.jl")
+include("movements/deallocate.jl")
 include("movements/replace.jl")
 include("movements/swap.jl")
 include("movements/shift.jl")
