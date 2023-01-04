@@ -1,20 +1,21 @@
-export Allocate
+export Shift
 
-mutable struct Allocate
+mutable struct Shift
 
     meeting::SolutionMeeting
-    classroom::Classroom
+    classroom_origin::Classroom
+    classroom_destination::Classroom
     objectives::Objectives
 
     day::Day
 
     allowed::Bool
 
-    Allocate() = new()
+    Shift() = new()
 
 end
 
-function startMove(move::Allocate, solution::Solution, problem::Problem)
+function startMove(move::Shift, solution::Solution, problem::Problem)
 
     sizeClassrooms = length(problem.classrooms)
     meetings = solution.meetings
@@ -43,7 +44,7 @@ function startMove(move::Allocate, solution::Solution, problem::Problem)
     meetingCount = rand(1:length(move.day.meetings))
 
     for i = 1:length(move.day.meetings)
-        if (move.day.meetings[meetingCount].classroomID == 0)
+        if (move.day.meetings[meetingCount].classroomID != 0)
             meetingCode = move.day.meetings[meetingCount].ID
             break
         end
@@ -61,11 +62,12 @@ function startMove(move::Allocate, solution::Solution, problem::Problem)
 
     classroomCount = rand(1:sizeClassrooms)
 
-    for i = 1:sizeClassrooms
+    for  i = 1:sizeClassrooms
         if (verifyClassroomAvailability(move.day, classrooms[classroomCount].ID, meetings[meetingCode].schedules))
             if (checkRestrictions(meetings[meetingCode].restrictions, classrooms[classroomCount]))
                 move.meeting = meetings[meetingCode]
-                move.classroom = classrooms[classroomCount]
+                move.classroom_origin = classrooms[meetings[meetingCode].classroomID]
+                move.classroom_destination = classrooms[classroomCount]
                 move.objectives = solution.objectives
                 move.allowed = true
     
@@ -81,19 +83,22 @@ function startMove(move::Allocate, solution::Solution, problem::Problem)
     end
 end
 
-function doMove(move::Allocate)
+function doMove(move::Shift)
     
     # creating auxiliar variables to count the objectives
     oldObjectives = Objectives()
     newObjectives = Objectives()
     returnObjectives = deepcopy(move.objectives)
 
-    # calculating the objectives when the meeting is deallocated
-    oldObjectives.deallocated += move.meeting.demand
-    oldObjectives.preferences += length(move.meeting.preferences)
+    # calculating the objectives when the meeting is allocated in the original classroom
+    x = calculateAllocationObjective(move.meeting, move.classroom_origin)
+    oldObjectives.idleness += x.idleness
+    oldObjectives.deallocated += x.deallocated
+    oldObjectives.lessThan10 += x.lessThan10
+    oldObjectives.preferences += x.preferences
     
-    # calculating the objectives when the meeting is allocated
-    y = calculateAllocationObjective(move.meeting, move.classroom)
+    # calculating the objectives when the meeting is shifted to the new classroom
+    y = calculateAllocationObjective(move.meeting, move.classroom_destination)
     newObjectives.idleness += y.idleness
     newObjectives.deallocated += y.deallocated
     newObjectives.lessThan10 += y.lessThan10
@@ -101,7 +106,10 @@ function doMove(move::Allocate)
 
     # calculating preferences objectives if the meeting has preferences
     if length(move.meeting.preferences) > 0
-        y = calculatePreferenceObjective(move.meeting, move.classroom)
+        x = calculatePreferenceObjective(move.meeting, move.classroom_origin)
+        oldObjectives.preferences += x.preferences
+
+        y = calculatePreferenceObjective(move.meeting, move.classroom_destination)
         newObjectives.preferences += y.preferences
     end
 
@@ -116,18 +124,21 @@ function doMove(move::Allocate)
 
 end
 
-function acceptMove(move::Allocate)
+function acceptMove(move::Shift)
 
     day::Day = move.day
 
     schedules = move.meeting.schedules
 
     for i in eachindex(schedules)
-        day.matrix[schedules[i].ID, move.classroom.ID].meetingID = move.meeting.ID
-        day.matrix[schedules[i].ID, move.classroom.ID].status = 1
+        day.matrix[schedules[i].ID, move.classroom_origin.ID].meetingID = 0
+        day.matrix[schedules[i].ID, move.classroom_origin.ID].status = 0
+        
+        day.matrix[schedules[i].ID, move.classroom_destination.ID].meetingID = move.meeting.ID
+        day.matrix[schedules[i].ID, move.classroom_destination.ID].status = 1
     end
 
-    move.meeting.classroomID = move.classroom.ID
-    move.meeting.buildingID = move.classroom.buildingID
+    move.meeting.classroomID = move.classroom_destination.ID
+    move.meeting.buildingID = move.classroom_destination.buildingID
 
 end

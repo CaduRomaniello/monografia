@@ -210,12 +210,12 @@ end
 """
 Calculate objectives related to meeting demand and classroom capacity for specific meeting  in specific classroom
 """
-function calculateAllocationObjective(move::Allocate)
+function calculateAllocationObjective(meeting::SolutionMeeting, classroom::Classroom)
 
     x = Objectives()
 
-    demand = move.meeting.demand
-    capacity = move.classroom.capacity
+    demand = meeting.demand
+    capacity = classroom.capacity
 
     if demand <= capacity
         if (capacity - demand) > round(capacity / 2, RoundDown)
@@ -240,33 +240,33 @@ end
 """
 Calculate preference objective for specific meeting  in specific classroom
 """
-function calculatePreferenceObjective(move::Allocate)
+function calculatePreferenceObjective(meeting::SolutionMeeting, classroom::Classroom)
     x = Objectives()
-    if (move.classroom.ID != 0)
-        for i in eachindex(move.meeting.preferences)
-            if (move.meeting.preferences[i].building !== nothing)
-                if (move.meeting.preferences[i].building != move.classroom.buildingID)
+    if (classroom.ID != 0)
+        for i in eachindex(meeting.preferences)
+            if (meeting.preferences[i].building !== nothing)
+                if (meeting.preferences[i].building != classroom.buildingID)
                     x.preferences += 1
                 else
                     x.preferences -= 1
                 end
             end
-            if (move.meeting.preferences[i].floor !== nothing)
-                if (move.meeting.preferences[i].floor != move.classroom.floor)
+            if (meeting.preferences[i].floor !== nothing)
+                if (meeting.preferences[i].floor != classroom.floor)
                     x.preferences += 1
                 else
                     x.preferences -= 1
                 end
             end
-            if (move.meeting.preferences[i].board !== nothing)
-                if (move.meeting.preferences[i].board != move.classroom.board)
+            if (meeting.preferences[i].board !== nothing)
+                if (meeting.preferences[i].board != classroom.board)
                     x.preferences += 1
                 else
                     x.preferences -= 1
                 end
             end
-            if (move.meeting.preferences[i].projector !== nothing)
-                if (move.meeting.preferences[i].projector != move.classroom.projector)
+            if (meeting.preferences[i].projector !== nothing)
+                if (meeting.preferences[i].projector != classroom.projector)
                     x.preferences += 1
                 else
                     x.preferences -= 1
@@ -275,17 +275,17 @@ function calculatePreferenceObjective(move::Allocate)
         end
         return x
     else
-        for i in eachindex(move.meeting.preferences)
-            if (move.meeting.preferences[i].building !== nothing)
+        for i in eachindex(meeting.preferences)
+            if (meeting.preferences[i].building !== nothing)
                 x.preferences += 1
             end
-            if (move.meeting.preferences[i].floor !== nothing)
+            if (meeting.preferences[i].floor !== nothing)
                 x.preferences += 1
             end
-            if (move.meeting.preferences[i].board !== nothing)
+            if (meeting.preferences[i].board !== nothing)
                 x.preferences += 1
             end
-            if (move.meeting.preferences[i].projector !== nothing)
+            if (meeting.preferences[i].projector !== nothing)
                 x.preferences += 1
             end
         end
@@ -440,4 +440,46 @@ function checkAllocation(solution::Solution)
             end
         end
     end
+end
+
+"""
+Test movements
+"""
+function testMovements(solution, problem)
+    allocate = Allocate()
+    shift = Shift()
+
+    println("$(solution.meetings[1].ID), $(solution.meetings[1].dayOfWeek), $(solution.meetings[1].schedules), $(solution.meetings[1].classroomID)")
+    println()
+    println("$(solution.thursday.matrix[2, 1]), $(solution.thursday.matrix[3, 1])")
+    println("$(solution.thursday.matrix[2, 2]), $(solution.thursday.matrix[3, 2])")
+    
+    allocate.allowed = false
+    allocate.classroom = problem.classrooms[1]
+    allocate.day = solution.thursday
+    allocate.meeting = solution.meetings[1]
+    allocate.objectives = solution.objectives
+    returnAllocate = doMove(allocate)
+    acceptMove(allocate)
+
+    println()
+    println("$(solution.meetings[1].ID), $(solution.meetings[1].dayOfWeek), $(solution.meetings[1].schedules), $(solution.meetings[1].classroomID)")
+    println()
+    println("$(solution.thursday.matrix[2, 1]), $(solution.thursday.matrix[3, 1])")
+    println("$(solution.thursday.matrix[2, 2]), $(solution.thursday.matrix[3, 2])")
+
+    shift.allowed = false
+    shift.classroom_destination = problem.classrooms[2]
+    shift.classroom_origin = problem.classrooms[1]
+    shift.day = solution.thursday
+    shift.meeting = solution.meetings[1]
+    shift.objectives = solution.objectives
+    returnShift = doMove(shift)
+    acceptMove(shift)
+
+    println()
+    println("$(solution.meetings[1].ID), $(solution.meetings[1].dayOfWeek), $(solution.meetings[1].schedules), $(solution.meetings[1].classroomID)")
+    println()
+    println("$(solution.thursday.matrix[2, 1]), $(solution.thursday.matrix[3, 1])")
+    println("$(solution.thursday.matrix[2, 2]), $(solution.thursday.matrix[3, 2])")
 end

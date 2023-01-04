@@ -18,6 +18,7 @@ using PyCall
 
 include("lib/problemStructs.jl")
 include("lib/solutionStructs.jl")
+include("movements/shift.jl")
 include("movements/allocate.jl")
 include("functions/auxiliarFunctions.jl")
 include("functions/readFunctions.jl")

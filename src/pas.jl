@@ -142,6 +142,7 @@ function pas(FILE1::String, maxTime::Int64, seed::Int64)
     =================================================================================================#
 
     greedy(solution, problem)
+    # testMovements(solution, problem)
 
     end_greedy = Dates.now()
 

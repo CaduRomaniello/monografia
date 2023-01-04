@@ -181,3 +181,15 @@ function readReservations(problemData, reservations::Array{Reservation, 1})
     end
 
 end
+
+"""
+Check some instance aspects that can generate errors
+"""
+function checkInstance(meetings::SolutionMeeting)
+    isOk = true
+    for i in eachindex(meetings)
+        if meetings[i].demand == 0
+            println("Meeting with ID $(meetings[i]) has no demand, if possible remove it from the instance")
+        end
+    end
+end
