@@ -443,19 +443,28 @@ function checkAllocation(solution::Solution)
 end
 
 """
-Test movements
+Print objectives in the terminal
 """
-function testMovements(solution, problem)
-    allocate = Allocate()
-    shift = Shift()
-    swap = Swap()
+function printObjectives(objectives::Objectives)
+    println("========================================================================")
+    println("OBJECTIVES")
+    println()
+    println("- Deallocated  : $(objectives.deallocated)")
+    println("- Idleness     : $(objectives.idleness)")
+    println("- Less than 10%: $(objectives.lessThan10)")
+    println("- More than 10%: $(objectives.moreThan10)")
+    println("- Preferences  : $(objectives.preferences)")
+    println("========================================================================")
+end
 
-    # println("$(solution.meetings[1].ID), $(solution.meetings[1].dayOfWeek), $(solution.meetings[1].schedules), $(solution.meetings[1].classroomID)")
-    # println()
-    # println("$(solution.thursday.matrix[2, 1]), $(solution.thursday.matrix[3, 1])")
-    # println("$(solution.thursday.matrix[2, 2]), $(solution.thursday.matrix[3, 2])")
-    
-    println(solution.objectives)
+"""
+Test allocate movement. This function uses specific meetings from the fixed.json instance. It may not work with other instances
+"""
+function testAllocateMove(solution, problem)
+    allocate = Allocate()
+
+    println("--------------------------------------------------------------------------")
+    printObjectives(solution.objectives)
     allocate.allowed = false
     allocate.classroom = problem.classrooms[1]
     allocate.day = solution.thursday
@@ -464,50 +473,168 @@ function testMovements(solution, problem)
     returnAllocate = doMove(allocate)
     acceptMove(allocate)
     solution.objectives = deepcopy(returnAllocate)
+    
+    println("- Meeting demand    : $(solution.meetings[1].demand)")
+    println("- Classroom capacity: $(problem.classrooms[1].capacity)")
+    
+    println()
+    printObjectives(solution.objectives)
+    println("--------------------------------------------------------------------------")
+end
 
-    println(solution.meetings[1].demand, ", ", problem.classrooms[1].capacity)
+"""
+Test deallocate movement. This function uses specific meetings from the fixed.json instance. It may not work with other instances
+"""
+function testDeallocateMove(solution, problem)
+    allocate = Allocate()
+    deallocate = Deallocate()
+
+    println("--------------------------------------------------------------------------")
+    printObjectives(solution.objectives)
+    allocate.allowed = false
+    allocate.classroom = problem.classrooms[1]
+    allocate.day = solution.thursday
+    allocate.meeting = solution.meetings[1]
+    allocate.objectives = solution.objectives
+    returnAllocate = doMove(allocate)
+    acceptMove(allocate)
+    solution.objectives = deepcopy(returnAllocate)
+    
+    println("- Meeting demand    : $(solution.meetings[1].demand)")
+    println("- Classroom capacity: $(problem.classrooms[1].capacity)")
+    
+    println()
+    printObjectives(solution.objectives)
+
+    deallocate.allowed = false
+    deallocate.classroom = problem.classrooms[1]
+    deallocate.day = solution.thursday
+    deallocate.meeting = solution.meetings[1]
+    deallocate.objectives = solution.objectives
+    returnDeallocate = doMove(deallocate)
+    acceptMove(deallocate)
+    solution.objectives = deepcopy(returnDeallocate)
+
+    println("- Meeting demand    : $(solution.meetings[1].demand)")
+    println("- Classroom capacity: $(problem.classrooms[1].capacity)")
 
     println()
-    println(solution.objectives)
+    printObjectives(solution.objectives)
+    println("--------------------------------------------------------------------------")
+end
 
-    # println()
-    # println("$(solution.meetings[1].ID), $(solution.meetings[1].dayOfWeek), $(solution.meetings[1].schedules), $(solution.meetings[1].classroomID)")
-    # println()
-    # println("$(solution.thursday.matrix[2, 1]), $(solution.thursday.matrix[3, 1])")
-    # println("$(solution.thursday.matrix[2, 2]), $(solution.thursday.matrix[3, 2])")
+"""
+Test replace movement. This function uses specific meetings from the fixed.json instance. It may not work with other instances
+"""
+function testReplaceMove(solution, problem)
+    allocate = Allocate()
+    replace = Replace()
 
-    # ================================================================================
-    # shift movement
-    # ================================================================================
+    println("--------------------------------------------------------------------------")
+    printObjectives(solution.objectives)
+    allocate.allowed = false
+    allocate.classroom = problem.classrooms[1]
+    allocate.day = solution.thursday
+    allocate.meeting = solution.meetings[1]
+    allocate.objectives = solution.objectives
+    returnAllocate = doMove(allocate)
+    acceptMove(allocate)
+    solution.objectives = deepcopy(returnAllocate)
+    
+    println("- Meeting demand    : $(solution.meetings[1].demand)")
+    println("- Classroom capacity: $(problem.classrooms[1].capacity)")
+    
+    println()
+    printObjectives(solution.objectives)
 
-    # shift.allowed = false
-    # shift.classroom_destination = problem.classrooms[2]
-    # shift.classroom_origin = problem.classrooms[1]
-    # shift.day = solution.thursday
-    # shift.meeting = solution.meetings[1]
-    # shift.objectives = solution.objectives
-    # returnShift = doMove(shift)
-    # acceptMove(shift)
-    # solution.objectives = deepcopy(returnShift)
+    replace.allowed = false
+    replace.classroom = problem.classrooms[1]
+    replace.day = solution.thursday
+    replace.meeting_1 = solution.meetings[1]
+    replace.meeting_2 = solution.meetings[23]
+    replace.objectives = solution.objectives
+    returnReplace = doMove(replace)
+    acceptMove(replace)
+    solution.objectives = deepcopy(returnReplace)
 
-    # println()
-    # println(solution.objectives)
-
-    # # println()
-    # # println("$(solution.meetings[1].ID), $(solution.meetings[1].dayOfWeek), $(solution.meetings[1].schedules), $(solution.meetings[1].classroomID)")
-    # # println()
-    # # println("$(solution.thursday.matrix[2, 1]), $(solution.thursday.matrix[3, 1])")
-    # # println("$(solution.thursday.matrix[2, 2]), $(solution.thursday.matrix[3, 2])")
-
-    # ================================================================================
-    # ================================================================================
-    # ================================================================================
+    println("- Meeting 1 demand    : $(solution.meetings[1].demand)")
+    println("- Meeting 2 demand    : $(solution.meetings[23].demand)")
+    println("- Classroom capacity  : $(problem.classrooms[1].capacity)")
 
     println()
-    println(solution.objectives)
+    printObjectives(solution.objectives)
+    println("--------------------------------------------------------------------------")
+end
+
+"""
+Test shift movement. This function uses specific meetings from the fixed.json instance. It may not work with other instances
+"""
+function testShiftMove(solution, problem)
+    allocate = Allocate()
+    shift = Shift()
+
+    println("--------------------------------------------------------------------------")
+    printObjectives(solution.objectives)
+    allocate.allowed = false
+    allocate.classroom = problem.classrooms[1]
+    allocate.day = solution.thursday
+    allocate.meeting = solution.meetings[1]
+    allocate.objectives = solution.objectives
+    returnAllocate = doMove(allocate)
+    acceptMove(allocate)
+    solution.objectives = deepcopy(returnAllocate)
+    
+    println("- Meeting demand    : $(solution.meetings[1].demand)")
+    println("- Classroom capacity: $(problem.classrooms[1].capacity)")
+    
+    println()
+    printObjectives(solution.objectives)
+
+    shift.allowed = false
+    shift.classroom_destination = problem.classrooms[11]
+    shift.classroom_origin = problem.classrooms[1]
+    shift.day = solution.thursday
+    shift.meeting = solution.meetings[1]
+    shift.objectives = solution.objectives
+    returnShift = doMove(shift)
+    acceptMove(shift)
+    solution.objectives = deepcopy(returnShift)
+
+    println("- Meeting demand        : $(solution.meetings[1].demand)")
+    println("- Classroom 1 capacity  : $(problem.classrooms[1].capacity)")
+    println("- Classroom 2 capacity  : $(problem.classrooms[11].capacity)")
+
+    println()
+    printObjectives(solution.objectives)
+    println("--------------------------------------------------------------------------")
+end
+
+"""
+Test swap movement. This function uses specific meetings from the fixed.json instance. It may not work with other instances
+"""
+function testSwapMove(solution, problem)
+    allocate = Allocate()
+    swap = Swap()
+
+    println("--------------------------------------------------------------------------")
+    printObjectives(solution.objectives)
+    allocate.allowed = false
+    allocate.classroom = problem.classrooms[1]
+    allocate.day = solution.thursday
+    allocate.meeting = solution.meetings[1]
+    allocate.objectives = solution.objectives
+    returnAllocate = doMove(allocate)
+    acceptMove(allocate)
+    solution.objectives = deepcopy(returnAllocate)
+    
+    println("- Meeting demand    : $(solution.meetings[1].demand)")
+    println("- Classroom capacity: $(problem.classrooms[1].capacity)")
+    
+    println()
+    printObjectives(solution.objectives)
 
     allocate.allowed = false
-    allocate.classroom = problem.classrooms[2]
+    allocate.classroom = problem.classrooms[11]
     allocate.day = solution.thursday
     allocate.meeting = solution.meetings[23]
     allocate.objectives = solution.objectives
@@ -515,19 +642,15 @@ function testMovements(solution, problem)
     acceptMove(allocate)
     solution.objectives = deepcopy(returnAllocate)
 
-    println(solution.meetings[23].demand, ", ", problem.classrooms[2].capacity)
-
+    println("- Meeting demand    : $(solution.meetings[23].demand)")
+    println("- Classroom capacity: $(problem.classrooms[11].capacity)")
+    
     println()
-    println(solution.objectives)
-
-    # println()
-    # println("$(solution.meetings[23].ID), $(solution.meetings[23].dayOfWeek), $(solution.meetings[23].schedules), $(solution.meetings[23].classroomID)")
-    # println()
-    # println("$(solution.thursday.matrix[2, 2]), $(solution.thursday.matrix[3, 2])")
+    printObjectives(solution.objectives)
 
     swap.allowed = false
     swap.classroom_1 = problem.classrooms[1]
-    swap.classroom_2 = problem.classrooms[2]
+    swap.classroom_2 = problem.classrooms[11]
     swap.day = solution.thursday
     swap.meeting_1 = solution.meetings[1]
     swap.meeting_2 = solution.meetings[23]
@@ -536,16 +659,12 @@ function testMovements(solution, problem)
     acceptMove(swap)
     solution.objectives = deepcopy(returnSwap)
 
-    println(solution.meetings[1].demand, ", ", problem.classrooms[1].capacity)
-    println(solution.meetings[23].demand, ", ", problem.classrooms[2].capacity)
+    println("- Meeting 1 demand      : $(solution.meetings[1].demand)")
+    println("- Meeting 2 demand      : $(solution.meetings[23].demand)")
+    println("- Classroom 1 capacity  : $(problem.classrooms[1].capacity)")
+    println("- Classroom 2 capacity  : $(problem.classrooms[11].capacity)")
 
     println()
-    println(solution.objectives)
-
-    # println()
-    # println("$(solution.meetings[1].ID), $(solution.meetings[1].dayOfWeek), $(solution.meetings[1].schedules), $(solution.meetings[1].classroomID)")
-    # println("$(solution.meetings[23].ID), $(solution.meetings[23].dayOfWeek), $(solution.meetings[23].schedules), $(solution.meetings[23].classroomID)")
-    # println()
-    # println("$(solution.thursday.matrix[2, 1]), $(solution.thursday.matrix[3, 1])")
-    # println("$(solution.thursday.matrix[2, 2]), $(solution.thursday.matrix[3, 2])")
+    printObjectives(solution.objectives)
+    println("--------------------------------------------------------------------------")
 end

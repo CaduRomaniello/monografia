@@ -138,23 +138,20 @@ function pas(FILE1::String, maxTime::Int64, seed::Int64)
     # println(doMove(x))
 
     #=================================================================================================
+    Functions that test if the movements are working correctly
+    =================================================================================================#
+
+    # testAllocateMove(solution, problem)
+    # testDeallocateMove(solution, problem)
+    # testReplaceMove(solution, problem)
+    # testShiftMove(solution, problem)
+    # testSwapMove(solution, problem)
+
+    #=================================================================================================
     Greedy algorithm
     =================================================================================================#
 
-    # println(length(solution.thursday.meetings))
-    # for i in eachindex(solution.thursday.meetings)
-    #     if i == 1
-    #         continue
-    #     end
-    #     if solution.thursday.meetings[1].schedules == solution.thursday.meetings[i].schedules
-    #         println("da pra comparar $i")
-    #     end
-    # end
-    # println(solution.thursday.meetings[1].ID, ", ", solution.thursday.meetings[1].schedules)
-    # println(solution.thursday.meetings[8].ID, ", ", solution.thursday.meetings[8].schedules)
-
     # greedy(solution, problem)
-    testMovements(solution, problem)
 
     end_greedy = Dates.now()
 
@@ -165,6 +162,10 @@ function pas(FILE1::String, maxTime::Int64, seed::Int64)
 
     # checks allocations made by the greedy algorithm
     checkAllocation(solution)
+
+    #=================================================================================================
+    Output solution
+    =================================================================================================#
 
     # output = open("../output/result.json", "w")
 
