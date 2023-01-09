@@ -604,6 +604,20 @@ function testShiftMove(solution, problem)
     println("- Classroom 1 capacity  : $(problem.classrooms[1].capacity)")
     println("- Classroom 2 capacity  : $(problem.classrooms[11].capacity)")
 
+    # id = shift.meeting.ID
+    # pos = 0
+    # for i in eachindex(shift.day.meetings)
+    #     if shift.day.meetings[i].ID == id
+    #         pos = i
+    #         break
+    #     end
+    # end
+
+    # s = shift.meeting.schedules
+    # println("MOVE: $(shift.meeting.classroomID)")
+    # println("MOVE.DAY: $(shift.day.meetings[pos].classroomID)")
+    # println("SOLUTION.MEETINGS: $(solution.meetings[id].classroomID)")
+
     println()
     printObjectives(solution.objectives)
     println("--------------------------------------------------------------------------")
@@ -667,4 +681,48 @@ function testSwapMove(solution, problem)
     println()
     printObjectives(solution.objectives)
     println("--------------------------------------------------------------------------")
+end
+
+"""
+Calculate solution value
+"""
+function calculateSolutionValue(objectives::Objectives)
+    return (objectives.idleness * 1) + (objectives.deallocated * 1) + (objectives.lessThan10 * 1) + (objectives.moreThan10 * 1) + (objectives.preferences * 1)
+end
+
+"""
+Copy one Objectives variable into another
+"""
+function copyObjectives(source::Objectives, destiny::Objectives)
+    destiny.deallocated = source.deallocated
+    destiny.idleness = source.idleness
+    destiny.lessThan10 = source.lessThan10
+    destiny.moreThan10 = source.moreThan10
+    destiny.preferences = source.preferences
+end
+
+"""
+Verify if meetings schedules are equal
+"""
+function equalSchedules(schedule_1::Array{Schedule, 1}, schedule_2::Array{Schedule, 1})
+    if length(schedule_1) != length(schedule_2)
+        return false
+    end
+
+    for i in eachindex(schedule_1)
+        have = false
+
+        for j in eachindex(schedule_2)
+            if schedule_1[i].ID == schedule_2[j].ID
+                have = true
+                break
+            end
+        end
+
+        if !have
+            return false
+        end
+    end
+
+    return true
 end

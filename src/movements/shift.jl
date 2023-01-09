@@ -18,7 +18,6 @@ end
 function startMove(move::Shift, solution::Solution, problem::Problem)
     move.allowed = false
 
-
     sizeClassrooms = length(problem.classrooms)
     meetings = solution.meetings
     classrooms = problem.classrooms
@@ -64,7 +63,7 @@ function startMove(move::Shift, solution::Solution, problem::Problem)
 
     classroomCount = rand(1:sizeClassrooms)
 
-    for  i = 1:sizeClassrooms
+    for i = 1:sizeClassrooms
         if (verifyClassroomAvailability(move.day, classrooms[classroomCount].ID, meetings[meetingCode].schedules))
             if (checkRestrictions(meetings[meetingCode].restrictions, classrooms[classroomCount]))
                 move.meeting = meetings[meetingCode]
@@ -140,7 +139,36 @@ function acceptMove(move::Shift)
         day.matrix[schedules[i].ID, move.classroom_destination.ID].status = 1
     end
 
+    id = move.meeting.ID
+
+    pos = 0
+    for i in eachindex(move.day.meetings)
+        if move.day.meetings[i].ID == id
+            pos = i
+            break
+        end
+    end
+    
     move.meeting.classroomID = move.classroom_destination.ID
     move.meeting.buildingID = move.classroom_destination.buildingID
 
+end
+
+function checkShift(move::Shift, solution::Solution)
+    # println(move.classroom_origin.ID, ", ", move.classroom_destination.ID, ", ", move.meeting.classroomID)
+    id = move.meeting.ID
+
+    pos = 0
+    for i in eachindex(move.day.meetings)
+        if move.day.meetings[i].ID == id
+            pos = i
+            break
+        end
+    end
+
+    if move.meeting.classroomID != move.day.meetings[pos].classroomID || move.meeting.classroomID != solution.meetings[id].classroomID || move.day.meetings[pos].classroomID != solution.meetings[id].classroomID
+        println("ERRO SHIFT")
+        println(move.meeting.classroomID, ", ", move.day.meetings[pos].classroomID, ", ", solution.meetings[id].classroomID)
+        println("========================================================================================================")
+    end
 end

@@ -23,6 +23,7 @@ function main(ARGS)
         seed = parse(Int, args[2])
         Random.seed!(seed)
         time = parse(Int, args[3])
+
         if (input1[2] != "json")
             println("Erro: Instance file must be a JSON file!.")
         else

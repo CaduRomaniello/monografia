@@ -17,7 +17,6 @@ end
 function startMove(move::Allocate, solution::Solution, problem::Problem)
     move.allowed = false
 
-
     sizeClassrooms = length(problem.classrooms)
     meetings = solution.meetings
     classrooms = problem.classrooms
@@ -128,8 +127,26 @@ function acceptMove(move::Allocate)
         day.matrix[schedules[i].ID, move.classroom.ID].meetingID = move.meeting.ID
         day.matrix[schedules[i].ID, move.classroom.ID].status = 1
     end
-
+    
     move.meeting.classroomID = move.classroom.ID
     move.meeting.buildingID = move.classroom.buildingID
 
+end
+
+function checkAllocate(move::Allocate, solution::Solution)
+    id = move.meeting.ID
+
+    pos = 0
+    for i in eachindex(move.day.meetings)
+        if move.day.meetings[i].ID == id
+            pos = i
+            break
+        end
+    end
+
+    if move.meeting.classroomID != move.day.meetings[pos].classroomID || move.meeting.classroomID != solution.meetings[id].classroomID || move.day.meetings[pos].classroomID != solution.meetings[id].classroomID
+        println("ERRO ALLOCATE")
+        println(move.meeting.classroomID, ", ", move.day.meetings[pos].classroomID, ", ", solution.meetings[id].classroomID)
+        println("========================================================================================================")
+    end
 end

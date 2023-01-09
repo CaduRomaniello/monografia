@@ -116,3 +116,21 @@ function acceptMove(move::Deallocate)
     move.meeting.buildingID = 0
 
 end
+
+function checkDeallocate(move::Deallocate, solution::Solution)
+    id = move.meeting.ID
+
+    pos = 0
+    for i in eachindex(move.day.meetings)
+        if move.day.meetings[i].ID == id
+            pos = i
+            break
+        end
+    end
+
+    if move.meeting.classroomID != move.day.meetings[pos].classroomID || move.meeting.classroomID != solution.meetings[id].classroomID || move.day.meetings[pos].classroomID != solution.meetings[id].classroomID
+        println("ERRO DEALLOCATE")
+        println(move.meeting.classroomID, ", ", move.day.meetings[pos].classroomID, ", ", solution.meetings[id].classroomID)
+        println("========================================================================================================")
+    end
+end

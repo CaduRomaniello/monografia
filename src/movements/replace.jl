@@ -41,12 +41,14 @@ function startMove(move::Replace, solution::Solution, problem::Problem)
     else
     end
 
+    x = 0
     meetingCode_1 = 0
     meetingCount = rand(1:length(move.day.meetings))
 
     for i = 1:length(move.day.meetings)
         if (move.day.meetings[meetingCount].classroomID != 0)
             meetingCode_1 = move.day.meetings[meetingCount].ID
+            x = meetingCount
             break
         end
 
@@ -64,7 +66,11 @@ function startMove(move::Replace, solution::Solution, problem::Problem)
     meetingCode_2 = 0
     meetingCount = rand(1:length(move.day.meetings))
     for i = 1:length(move.day.meetings)
-        if (move.day.meetings[meetingCount].classroomID == 0 && move.day.meetings[meetingCount].schedules == move.day.meetings[meetingCode_1].schedules)
+        if move.day.meetings[meetingCount].ID == meetingCode_1
+            continue
+        end
+
+        if (move.day.meetings[meetingCount].classroomID == 0 && equalSchedules(move.day.meetings[meetingCount].schedules, meetings[meetingCode_1].schedules))
             meetingCode_2 = move.day.meetings[meetingCount].ID
             break
         end
@@ -158,4 +164,36 @@ function acceptMove(move::Replace)
     move.meeting_2.classroomID = move.classroom.ID
     move.meeting_2.buildingID = move.classroom.buildingID
 
+end
+
+function checkReplace(move::Replace, solution::Solution)
+    id_1 = move.meeting_1.ID
+    id_2 = move.meeting_2.ID
+
+    pos_1 = 0
+    for i in eachindex(move.day.meetings)
+        if move.day.meetings[i].ID == id_1
+            pos_1 = i
+            break
+        end
+    end
+    pos_2 = 0
+    for i in eachindex(move.day.meetings)
+        if move.day.meetings[i].ID == id_2
+            pos_2 = i
+            break
+        end
+    end
+
+    if move.meeting_1.classroomID != move.day.meetings[pos_1].classroomID || move.meeting_1.classroomID != solution.meetings[id_1].classroomID || move.day.meetings[pos_1].classroomID != solution.meetings[id_1].classroomID
+        println("ERRO REPLACE")
+        println(move.meeting_1.classroomID, ", ", move.day.meetings[pos_1].classroomID, ", ", solution.meetings[id_1].classroomID)
+        println("========================================================================================================")
+    end
+
+    if move.meeting_2.classroomID != move.day.meetings[pos_2].classroomID || move.meeting_2.classroomID != solution.meetings[id_2].classroomID || move.day.meetings[pos_2].classroomID != solution.meetings[id_2].classroomID
+        println("ERRO REPLACE")
+        println(move.meeting_2.classroomID, ", ", move.day.meetings[pos_2].classroomID, ", ", solution.meetings[id_2].classroomID)
+        println("========================================================================================================")
+    end
 end

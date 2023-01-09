@@ -151,13 +151,37 @@ function pas(FILE1::String, maxTime::Int64, seed::Int64)
     Greedy algorithm
     =================================================================================================#
 
-    # greedy(solution, problem)
+    printstyled("Cost before greedy: ", bold = true, color = :green)
+    println(calculateSolutionValue(solution.objectives))
+    greedy(solution, problem)
+    printstyled("Cost after greedy: ", bold = true, color = :green)
+    println(calculateSolutionValue(solution.objectives))
 
     end_greedy = Dates.now()
 
     printstyled("Finish greedy algorithm at: ", bold = true, color = :yellow)
     print(Dates.day(end_greedy), "/", Dates.month(end_greedy), "/", Dates.year(end_greedy), " ")
     println(Dates.hour(end_greedy), ":", Dates.minute(end_greedy), ":", Dates.second(end_greedy))
+    println("----------------------------------------------------------------------------------")
+
+    # checks allocations made by the greedy algorithm
+    checkAllocation(solution)
+
+    #=================================================================================================
+    LAHC
+    =================================================================================================#
+
+    printstyled("Cost before LAHC: ", bold = true, color = :green)
+    println(calculateSolutionValue(solution.objectives))
+    bestSolution = LAHC(solution, problem, 5000, maxTime)
+    printstyled("Cost after LAHC: ", bold = true, color = :green)
+    println(calculateSolutionValue(bestSolution.objectives))
+
+    end_lahc = Dates.now()
+
+    printstyled("Finish LAHC algorithm at: ", bold = true, color = :yellow)
+    print(Dates.day(end_lahc), "/", Dates.month(end_lahc), "/", Dates.year(end_lahc), " ")
+    println(Dates.hour(end_lahc), ":", Dates.minute(end_lahc), ":", Dates.second(end_lahc))
     println("----------------------------------------------------------------------------------")
 
     # checks allocations made by the greedy algorithm
