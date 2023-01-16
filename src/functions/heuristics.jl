@@ -95,7 +95,18 @@ function LAHC(solution::Solution, problem::Problem, listSize::Int64, maxTime::In
 
     # variables that control which movement is going to be executed
     movementsProbabilities = [0.2, 0.2, 0.2, 0.2, 0.2]
-    probabilities = [0, sum(movementsProbabilities[1:2]), sum(movementsProbabilities[1:3]), sum(movementsProbabilities[1:4]), 1]
+    probabilities = [sum(movementsProbabilities[1:1]), sum(movementsProbabilities[1:2]), sum(movementsProbabilities[1:3]), sum(movementsProbabilities[1:4]), 1]
+
+    # learning automaton constant
+    alpha = 10^-2
+
+    # data to generate the graphics
+    costGraphic = Array{CostGraphic, 1}()
+    objectivesGraphic = ObjectivesGraphic([(solution.objectives.idleness, Dates.value(startTime)/1000)], 
+    [(solution.objectives.deallocated, Dates.value(startTime)/1000)], 
+    [(solution.objectives.lessThan10, Dates.value(startTime)/1000)], 
+    [(solution.objectives.moreThan10, Dates.value(startTime)/1000)], 
+    [(solution.objectives.preferences, Dates.value(startTime)/1000)])
 
     # represents the list item that will be used in the specific iteration
     listPosition = 1
@@ -105,21 +116,22 @@ function LAHC(solution::Solution, problem::Problem, listSize::Int64, maxTime::In
     # newCost = 0
     # objectives = 0
     # randomMove = 0
-
-    # for i in eachindex(solution.meetings)
-    #     if solution.meetings[i].classroomID == 0
-    #         println("MERDA")
-    #     end
-    # end
     
     while (endTime - startTime <= limitTime)
 
+        # redefining the probabilities
+        probabilities = [sum(movementsProbabilities[1:1]), sum(movementsProbabilities[1:2]), sum(movementsProbabilities[1:3]), sum(movementsProbabilities[1:4])]
+
+        # getting the solutions that will be used in the comparisons in this iteration
         atualCost = list[listPosition]
 
         randomMove = rand(Float64)
+        # println(randomMove)
         # randomMove = 0.9
 
         if randomMove <= 0 && randomMove < probabilities[1]                    # allocate movement
+            # println("Allocate")
+            chosenMovement = 1
             startMove(allocate, solution, problem)
 
             if !allocate.allowed
@@ -131,16 +143,30 @@ function LAHC(solution::Solution, problem::Problem, listSize::Int64, maxTime::In
             newCost = calculateSolutionValue(objectives)
 
             if newCost <= atualCost
+                # println("Best")
                 acceptMove(allocate)
                 copyObjectives(objectives, solution.objectives)
 
+                acceptTime = Dates.value(Dates.now() - startTime) / 1000
+                addObjectivesGraphicValues(objectivesGraphic, objectives, acceptTime)
+                
                 checkAllocate(allocate, solution)
-
+                
                 list[listPosition] = newCost
             else
+                # println("Worse")
                 # call learning automaton
+                automaton_F1(movementsProbabilities, alpha, 0, chosenMovement)
+
+                for i = 1:length(movementsProbabilities)
+                    if (i != chosenMovement)
+                        automaton_F2(movementsProbabilities, alpha, 0, i)
+                    end
+                end
             end
         elseif randomMove <= probabilities[1] && randomMove < probabilities[2] # deallocate movement
+            # println("Deallocate")
+            chosenMovement = 2
             startMove(deallocate, solution, problem)
 
             if deallocate.allowed
@@ -152,16 +178,30 @@ function LAHC(solution::Solution, problem::Problem, listSize::Int64, maxTime::In
             newCost = calculateSolutionValue(objectives)
 
             if newCost <= atualCost
+                # println("Best")
                 acceptMove(deallocate)
                 copyObjectives(objectives, solution.objectives)
+
+                acceptTime = Dates.value(Dates.now() - startTime) / 1000
+                addObjectivesGraphicValues(objectivesGraphic, objectives, acceptTime)
 
                 checkDeallocate(deallocate, solution)
 
                 list[listPosition] = newCost
             else
+                # println("Worse")
                 # call learning automaton
+                automaton_F1(movementsProbabilities, alpha, 0, chosenMovement)
+
+                for i = 1:length(movementsProbabilities)
+                    if (i != chosenMovement)
+                        automaton_F2(movementsProbabilities, alpha, 0, i)
+                    end
+                end
             end
         elseif randomMove <= probabilities[2] && randomMove < probabilities[3] # replace movement
+            # println("Replace")
+            chosenMovement = 3
             startMove(replace, solution, problem)
 
             if !replace.allowed
@@ -173,16 +213,30 @@ function LAHC(solution::Solution, problem::Problem, listSize::Int64, maxTime::In
             newCost = calculateSolutionValue(objectives)
 
             if newCost <= atualCost
+                # println("Best")
                 acceptMove(replace)
                 copyObjectives(objectives, solution.objectives)
+
+                acceptTime = Dates.value(Dates.now() - startTime) / 1000
+                addObjectivesGraphicValues(objectivesGraphic, objectives, acceptTime)
 
                 checkReplace(replace, solution)
 
                 list[listPosition] = newCost
             else
+                # println("Worse")
                 # call learning automaton
+                automaton_F1(movementsProbabilities, alpha, 0, chosenMovement)
+
+                for i = 1:length(movementsProbabilities)
+                    if (i != chosenMovement)
+                        automaton_F2(movementsProbabilities, alpha, 0, i)
+                    end
+                end
             end
         elseif randomMove <= probabilities[3] && randomMove < probabilities[4] # shift movement
+            # println("Shift")
+            chosenMovement = 4
             startMove(shift, solution, problem)
 
             if !shift.allowed
@@ -194,16 +248,30 @@ function LAHC(solution::Solution, problem::Problem, listSize::Int64, maxTime::In
             newCost = calculateSolutionValue(objectives)
 
             if newCost <= atualCost
+                # println("Best")
                 acceptMove(shift)
                 copyObjectives(objectives, solution.objectives)
+
+                acceptTime = Dates.value(Dates.now() - startTime) / 1000
+                addObjectivesGraphicValues(objectivesGraphic, objectives, acceptTime)
 
                 checkShift(shift, solution)
 
                 list[listPosition] = newCost
             else
+                # println("Worse")
                 # call learning automaton
+                automaton_F1(movementsProbabilities, alpha, 0, chosenMovement)
+
+                for i = 1:length(movementsProbabilities)
+                    if (i != chosenMovement)
+                        automaton_F2(movementsProbabilities, alpha, 0, i)
+                    end
+                end
             end
         else                                                                   # swap movement
+            # println("Swap")
+            chosenMovement = 5
             startMove(swap, solution, problem)
 
             if !swap.allowed
@@ -215,14 +283,26 @@ function LAHC(solution::Solution, problem::Problem, listSize::Int64, maxTime::In
             newCost = calculateSolutionValue(objectives)
 
             if newCost <= atualCost
+                # println("Best")
                 acceptMove(swap)
                 copyObjectives(objectives, solution.objectives)
+
+                acceptTime = Dates.value(Dates.now() - startTime) / 1000
+                addObjectivesGraphicValues(objectivesGraphic, objectives, acceptTime)
 
                 checkSwap(swap, solution)
 
                 list[listPosition] = newCost
             else
+                # println("Worse")
                 # call learning automaton
+                automaton_F1(movementsProbabilities, alpha, 0, chosenMovement)
+
+                for i = 1:length(movementsProbabilities)
+                    if (i != chosenMovement)
+                        automaton_F2(movementsProbabilities, alpha, 0, i)
+                    end
+                end
             end
         end
 
@@ -232,9 +312,28 @@ function LAHC(solution::Solution, problem::Problem, listSize::Int64, maxTime::In
             bestSolution = deepcopy(solution)
             improvementTime = Dates.now()
 
+            # getting data for the cost graphic
+            time = improvementTime - startTime
+            time = Dates.value(time) / 1000
+            costData = CostGraphic(calculateSolutionValue(bestSolution.objectives), time)
+            push!(costGraphic, costData)
+
             # call learning automaton
+            automaton_F1(movementsProbabilities, alpha, 1, chosenMovement)
+
+            for i = 1:length(movementsProbabilities)
+                if (i != chosenMovement)
+                    automaton_F2(movementsProbabilities, alpha, 1, i)
+                end
+            end
+
             # graphics code
         end
+
+        # println(sum(movementsProbabilities))
+        # println(movementsProbabilities)
+        # println(probabilities)
+        # println("----------------------------------------------")
 
         # disturb
         
@@ -251,6 +350,8 @@ function LAHC(solution::Solution, problem::Problem, listSize::Int64, maxTime::In
 
     end
 
+    # println(costGraphic)
+    println(objectivesGraphic)
     return bestSolution
 
 end

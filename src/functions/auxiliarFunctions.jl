@@ -726,3 +726,14 @@ function equalSchedules(schedule_1::Array{Schedule, 1}, schedule_2::Array{Schedu
 
     return true
 end
+
+"""
+Add values to objectives graphics
+"""
+function addObjectivesGraphicValues(objectivesGraphic::ObjectivesGraphic, objectives::Objectives, time::Float64)
+    push!(objectivesGraphic.deallocated, (objectives.deallocated, time))
+    push!(objectivesGraphic.idleness, (objectives.idleness, time))
+    push!(objectivesGraphic.lessThan10, (objectives.lessThan10, time))
+    push!(objectivesGraphic.moreThan10, (objectives.moreThan10, time))
+    push!(objectivesGraphic.preferences, (objectives.preferences, time))
+end

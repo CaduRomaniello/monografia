@@ -69,3 +69,23 @@ mutable struct Solution
     Solution(sub_encontros, segunda, terca, quarta, quinta, sexta, sabado, custo_inicial, aval) = new(sub_encontros, segunda, terca, quarta, quinta, sexta, sabado, custo_inicial, aval)
 
 end
+
+mutable struct CostGraphic
+
+    cost::Int128
+    time::Float64
+
+    CostGraphic() = new()
+    CostGraphic(cost, time) = new(cost, time)
+
+end
+
+mutable struct ObjectivesGraphic
+
+    idleness::Array{Tuple{Int64, Float64}}
+    deallocated::Array{Tuple{Int64, Float64}}
+    lessThan10::Array{Tuple{Int64, Float64}}
+    moreThan10::Array{Tuple{Int64, Float64}}
+    preferences::Array{Tuple{Int64, Float64}}
+
+end
