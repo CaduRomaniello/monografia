@@ -148,7 +148,7 @@ function LAHC(solution::Solution, problem::Problem, listSize::Int64, maxTime::In
                 copyObjectives(objectives, solution.objectives)
 
                 acceptTime = Dates.value(Dates.now() - startTime) / 1000
-                addObjectivesGraphicValues(objectivesGraphic, objectives, acceptTime)
+                addObjectivesGraphicValues(objectivesGraphic, solution.objectives, acceptTime)
                 
                 checkAllocate(allocate, solution)
                 
@@ -183,7 +183,7 @@ function LAHC(solution::Solution, problem::Problem, listSize::Int64, maxTime::In
                 copyObjectives(objectives, solution.objectives)
 
                 acceptTime = Dates.value(Dates.now() - startTime) / 1000
-                addObjectivesGraphicValues(objectivesGraphic, objectives, acceptTime)
+                addObjectivesGraphicValues(objectivesGraphic, solution.objectives, acceptTime)
 
                 checkDeallocate(deallocate, solution)
 
@@ -218,7 +218,7 @@ function LAHC(solution::Solution, problem::Problem, listSize::Int64, maxTime::In
                 copyObjectives(objectives, solution.objectives)
 
                 acceptTime = Dates.value(Dates.now() - startTime) / 1000
-                addObjectivesGraphicValues(objectivesGraphic, objectives, acceptTime)
+                addObjectivesGraphicValues(objectivesGraphic, solution.objectives, acceptTime)
 
                 checkReplace(replace, solution)
 
@@ -253,7 +253,7 @@ function LAHC(solution::Solution, problem::Problem, listSize::Int64, maxTime::In
                 copyObjectives(objectives, solution.objectives)
 
                 acceptTime = Dates.value(Dates.now() - startTime) / 1000
-                addObjectivesGraphicValues(objectivesGraphic, objectives, acceptTime)
+                addObjectivesGraphicValues(objectivesGraphic, solution.objectives, acceptTime)
 
                 checkShift(shift, solution)
 
@@ -288,7 +288,7 @@ function LAHC(solution::Solution, problem::Problem, listSize::Int64, maxTime::In
                 copyObjectives(objectives, solution.objectives)
 
                 acceptTime = Dates.value(Dates.now() - startTime) / 1000
-                addObjectivesGraphicValues(objectivesGraphic, objectives, acceptTime)
+                addObjectivesGraphicValues(objectivesGraphic, solution.objectives, acceptTime)
 
                 checkSwap(swap, solution)
 
@@ -327,7 +327,6 @@ function LAHC(solution::Solution, problem::Problem, listSize::Int64, maxTime::In
                 end
             end
 
-            # graphics code
         end
 
         # println(sum(movementsProbabilities))
@@ -350,8 +349,6 @@ function LAHC(solution::Solution, problem::Problem, listSize::Int64, maxTime::In
 
     end
 
-    # println(costGraphic)
-    println(objectivesGraphic)
-    return bestSolution
+    return bestSolution, costGraphic, objectivesGraphic
 
 end

@@ -731,9 +731,47 @@ end
 Add values to objectives graphics
 """
 function addObjectivesGraphicValues(objectivesGraphic::ObjectivesGraphic, objectives::Objectives, time::Float64)
-    push!(objectivesGraphic.deallocated, (objectives.deallocated, time))
-    push!(objectivesGraphic.idleness, (objectives.idleness, time))
-    push!(objectivesGraphic.lessThan10, (objectives.lessThan10, time))
-    push!(objectivesGraphic.moreThan10, (objectives.moreThan10, time))
-    push!(objectivesGraphic.preferences, (objectives.preferences, time))
+
+    if objectivesGraphic.deallocated[length(objectivesGraphic.deallocated)][1] != objectives.deallocated
+        push!(objectivesGraphic.deallocated, (objectives.deallocated, time))
+    end
+    if objectivesGraphic.idleness[length(objectivesGraphic.idleness)][1] != objectives.idleness
+        push!(objectivesGraphic.idleness, (objectives.idleness, time))
+    end
+    if objectivesGraphic.lessThan10[length(objectivesGraphic.lessThan10)][1] != objectives.lessThan10
+        push!(objectivesGraphic.lessThan10, (objectives.lessThan10, time))
+    end
+    if objectivesGraphic.moreThan10[length(objectivesGraphic.moreThan10)][1] != objectives.moreThan10
+        push!(objectivesGraphic.moreThan10, (objectives.moreThan10, time))
+    end
+    if objectivesGraphic.preferences[length(objectivesGraphic.preferences)][1] != objectives.preferences
+        push!(objectivesGraphic.preferences, (objectives.preferences, time))
+    end
+
+end
+
+"""
+Create output files
+"""
+function outputSolution(solution::Solution, costGraphic::Array{CostGraphic, 1}, objectivesGraphic::ObjectivesGraphic, maxTime::Int64, seed::Int64, instanceName::String)
+
+    mkdir("../output/$(instanceName)")
+
+    output = open("../output/$(instanceName)/solution_seed-$(seed)_maxTime-$(maxTime).json", "w")
+    final_dict = OrderedDict("objectives" => solution.objectives, "meetings" => solution.meetings)
+    data = JSON.json(final_dict)
+    write(output, data)
+    close(output)
+
+    output = open("../output/$(instanceName)/costGraphic_seed-$(seed)_maxTime-$(maxTime).json", "w")
+    final_dict = OrderedDict("points" => costGraphic)
+    data = JSON.json(final_dict)
+    write(output, data)
+    close(output)
+
+    output = open("../output/$(instanceName)/objectivesGraphic_seed-$(seed)_maxTime-$(maxTime).json", "w")
+    final_dict = OrderedDict("idleness" => objectivesGraphic.idleness, "deallocated" => objectivesGraphic.deallocated, "lessThan10" => objectivesGraphic.lessThan10, "moreThan10" => objectivesGraphic.moreThan10,"preferences" => objectivesGraphic.preferences)
+    data = JSON.json(final_dict)
+    write(output, data)
+    close(output)
 end

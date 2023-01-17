@@ -173,7 +173,7 @@ function pas(FILE1::String, maxTime::Int64, seed::Int64)
 
     printstyled("Cost before LAHC: ", bold = true, color = :green)
     println(calculateSolutionValue(solution.objectives))
-    bestSolution = LAHC(solution, problem, 5000, maxTime)
+    bestSolution, costGraphic, objectivesGraphic = LAHC(solution, problem, 5000, maxTime)
     printstyled("Cost after LAHC: ", bold = true, color = :green)
     println(calculateSolutionValue(bestSolution.objectives))
 
@@ -190,6 +190,8 @@ function pas(FILE1::String, maxTime::Int64, seed::Int64)
     #=================================================================================================
     Output solution
     =================================================================================================#
+
+    outputSolution(solution, costGraphic, objectivesGraphic, maxTime, seed, FILE1)
 
     # output = open("../output/result.json", "w")
 
