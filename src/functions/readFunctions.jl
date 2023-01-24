@@ -60,7 +60,7 @@ function readProfessors(problemData, professors::Array{Professor, 1})
         code = problemData["professors"][i]["code"]
         name = problemData["professors"][i]["name"]
 
-        professor = Professor(i, code, name)
+        professor = Professor(i, code, name, [])
 
         push!(professors, professor)
 

@@ -111,9 +111,19 @@ function doMove(move::Replace)
     oldObjectives.deallocated += x.deallocated
     oldObjectives.lessThan10 += x.lessThan10
     oldObjectives.preferences += x.preferences
+    for i in eachindex(move.meeting_1.professors)
+        if length(move.meeting_1.professors[i].classrooms) > 1
+            oldObjectives.professors += length(move.meeting_1.professors[i].classrooms) - 1
+        end
+    end
 
     oldObjectives.deallocated += move.meeting_2.demand
     oldObjectives.preferences += length(move.meeting_2.preferences)
+    for i in eachindex(move.meeting_2.professors)
+        if length(move.meeting_2.professors[i].classrooms) > 1
+            oldObjectives.professors += length(move.meeting_2.professors[i].classrooms) - 1
+        end
+    end
     
     # calculating the objectives for the two meetings after replacement
     y = calculateAllocationObjective(move.meeting_2, move.classroom)
@@ -121,9 +131,13 @@ function doMove(move::Replace)
     newObjectives.deallocated += y.deallocated
     newObjectives.lessThan10 += y.lessThan10
     newObjectives.preferences += y.preferences
+    y = calculateProfessorObjective(move.meeting_2, move.classroom)
+    newObjectives.professors += y.professors
     
     newObjectives.deallocated += move.meeting_1.demand
     newObjectives.preferences += length(move.meeting_1.preferences)
+    y = calculateProfessorObjective(move.meeting_1, move.classroom)
+    newObjectives.professors += y.professors
 
     # calculating preferences objectives for the two meetings before and after the swap
     if length(move.meeting_1.preferences) > 0
@@ -132,7 +146,7 @@ function doMove(move::Replace)
     end
 
     if length(move.meeting_2.preferences) > 0
-        y = calculatePreferenceObjective(move.meeting_2, move.classroom_1)
+        y = calculatePreferenceObjective(move.meeting_2, move.classroom)
         newObjectives.preferences += y.preferences
     end
 
@@ -142,6 +156,7 @@ function doMove(move::Replace)
     returnObjectives.lessThan10 += (newObjectives.lessThan10 - oldObjectives.lessThan10)
     returnObjectives.moreThan10 += (newObjectives.moreThan10 - oldObjectives.moreThan10)
     returnObjectives.preferences += (newObjectives.preferences - oldObjectives.preferences)
+    returnObjectives.professors += (newObjectives.professors - oldObjectives.professors)
 
     return returnObjectives
 
@@ -163,6 +178,46 @@ function acceptMove(move::Replace)
 
     move.meeting_2.classroomID = move.classroom.ID
     move.meeting_2.buildingID = move.classroom.buildingID
+
+    for i in eachindex(move.meeting_1.professors)
+        found = false
+        position = 0
+        for j in eachindex(move.meeting_1.professors[i].classrooms)
+            if move.classroom.ID == move.meeting_1.professors[i].classrooms[j].classroomID
+                position = j
+                found = true
+                break
+            end
+        end
+
+        if found
+            if move.meeting_1.professors[i].classrooms[position].quantity > 1
+                move.meeting_1.professors[i].classrooms[position].quantity -= 1
+            else
+                deleteat!(move.meeting_1.professors[i].classrooms, position)
+            end
+        else
+            println("ERRO replace - removing classroom when accepted")
+        end
+    end
+
+    for i in eachindex(move.meeting_2.professors)
+        found = false
+        position = 0
+        for j in eachindex(move.meeting_2.professors[i].classrooms)
+            if move.classroom.ID == move.meeting_2.professors[i].classrooms[j].classroomID
+                position = j
+                found = true
+                break
+            end
+        end
+
+        if found
+            move.meeting_2.professors[i].classrooms[position].quantity += 1
+        else
+            push!(move.meeting_2.professors[i].classrooms, TaughtClassrooms(move.classroom.ID, 1))
+        end
+    end
 
 end
 

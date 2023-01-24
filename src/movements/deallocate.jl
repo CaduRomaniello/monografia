@@ -79,10 +79,17 @@ function doMove(move::Deallocate)
     oldObjectives.deallocated += x.deallocated
     oldObjectives.lessThan10 += x.lessThan10
     oldObjectives.preferences += x.preferences
+    for i in eachindex(move.meeting.professors)
+        if length(move.meeting.professors[i].classrooms) > 1
+            oldObjectives.professors += length(move.meeting.professors[i].classrooms) - 1
+        end
+    end
     
     # calculating the objectives after deallocation
     newObjectives.deallocated += move.meeting.demand
     newObjectives.preferences += length(move.meeting.preferences)
+    y = calculateProfessorObjective(move.meeting, move.classroom)
+    newObjectives.professors += y.professors
 
     # calculating preferences objectives if the meeting has preferences
     if length(move.meeting.preferences) > 0
@@ -96,6 +103,7 @@ function doMove(move::Deallocate)
     returnObjectives.lessThan10 += (newObjectives.lessThan10 - oldObjectives.lessThan10)
     returnObjectives.moreThan10 += (newObjectives.moreThan10 - oldObjectives.moreThan10)
     returnObjectives.preferences += (newObjectives.preferences - oldObjectives.preferences)
+    returnObjectives.professors += (newObjectives.professors - oldObjectives.professors)
 
     return returnObjectives
 
@@ -114,6 +122,28 @@ function acceptMove(move::Deallocate)
 
     move.meeting.classroomID = 0
     move.meeting.buildingID = 0
+
+    for i in eachindex(move.meeting.professors)
+        found = false
+        position = 0
+        for j in eachindex(move.meeting.professors[i].classrooms)
+            if move.classroom.ID == move.meeting.professors[i].classrooms[j].classroomID
+                position = j
+                found = true
+                break
+            end
+        end
+
+        if found
+            if move.meeting.professors[i].classrooms[position].quantity > 1
+                move.meeting.professors[i].classrooms[position].quantity -= 1
+            else
+                deleteat!(move.meeting.professors[i].classrooms, position)
+            end
+        else
+            println("ERRO deallocate - removing classroom when accepted")
+        end
+    end
 
 end
 

@@ -92,6 +92,11 @@ function doMove(move::Allocate)
     # calculating the objectives when the meeting is deallocated
     oldObjectives.deallocated += move.meeting.demand
     oldObjectives.preferences += length(move.meeting.preferences)
+    for i in eachindex(move.meeting.professors)
+        if length(move.meeting.professors[i].classrooms) > 1
+            oldObjectives.professors += length(move.meeting.professors[i].classrooms) - 1
+        end
+    end
     
     # calculating the objectives when the meeting is allocated
     y = calculateAllocationObjective(move.meeting, move.classroom)
@@ -99,6 +104,8 @@ function doMove(move::Allocate)
     newObjectives.deallocated += y.deallocated
     newObjectives.lessThan10 += y.lessThan10
     newObjectives.preferences += y.preferences
+    y = calculateProfessorObjective(move.meeting, move.classroom)
+    newObjectives.professors += y.professors
 
     # calculating preferences objectives if the meeting has preferences
     if length(move.meeting.preferences) > 0
@@ -112,6 +119,7 @@ function doMove(move::Allocate)
     returnObjectives.lessThan10 += (newObjectives.lessThan10 - oldObjectives.lessThan10)
     returnObjectives.moreThan10 += (newObjectives.moreThan10 - oldObjectives.moreThan10)
     returnObjectives.preferences += (newObjectives.preferences - oldObjectives.preferences)
+    returnObjectives.professors += (newObjectives.professors - oldObjectives.professors)
 
     return returnObjectives
 
@@ -130,6 +138,24 @@ function acceptMove(move::Allocate)
     
     move.meeting.classroomID = move.classroom.ID
     move.meeting.buildingID = move.classroom.buildingID
+
+    for i in eachindex(move.meeting.professors)
+        found = false
+        position = 0
+        for j in eachindex(move.meeting.professors[i].classrooms)
+            if move.classroom.ID == move.meeting.professors[i].classrooms[j].classroomID
+                position = j
+                found = true
+                break
+            end
+        end
+
+        if found
+            move.meeting.professors[i].classrooms[position].quantity += 1
+        else
+            push!(move.meeting.professors[i].classrooms, TaughtClassrooms(move.classroom.ID, 1))
+        end
+    end
 
 end
 

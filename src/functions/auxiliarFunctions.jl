@@ -103,12 +103,12 @@ function createSolutionMeetings(problem::Problem)
                     # finding all professors for this meeting
                     for m in eachindex(problem.classes[k].professors)
                         for n in eachindex(problem.professors)
-                            if problem.classes[k].professors[m] == problem.professors[n].ID
+                            if problem.classes[k].professors[m] == problem.professors[n].code
                                 push!(x[i].professors, problem.professors[n])
 
                                 # finding all professor preferences for this meeting
                                 for t in eachindex(problem.preferences)
-                                    if problem.professors[n].ID == problem.preferences[t].categoryCode
+                                    if problem.professors[n].code == problem.preferences[t].categoryCode
                                         push!(x[i].preferences, problem.preferences[t])
                                         break
                                     end
@@ -116,7 +116,7 @@ function createSolutionMeetings(problem::Problem)
                     
                                 # finding all professor restrictions for this meeting
                                 for t in eachindex(problem.restrictions)
-                                    if problem.professors[n].ID == problem.restrictions[t].categoryCode
+                                    if problem.professors[n].code == problem.restrictions[t].categoryCode
                                         push!(x[i].restrictions, problem.restrictions[t])
                                         break
                                     end
@@ -248,28 +248,36 @@ function calculatePreferenceObjective(meeting::SolutionMeeting, classroom::Class
                 if (meeting.preferences[i].building != classroom.buildingID)
                     x.preferences += 1
                 else
-                    x.preferences -= 1
+                    if x.preferences > 0
+                        x.preferences -= 1
+                    end
                 end
             end
             if (meeting.preferences[i].floor !== nothing)
                 if (meeting.preferences[i].floor != classroom.floor)
                     x.preferences += 1
                 else
-                    x.preferences -= 1
+                    if x.preferences > 0
+                        x.preferences -= 1
+                    end
                 end
             end
             if (meeting.preferences[i].board !== nothing)
                 if (meeting.preferences[i].board != classroom.board)
                     x.preferences += 1
                 else
-                    x.preferences -= 1
+                    if x.preferences > 0
+                        x.preferences -= 1
+                    end
                 end
             end
             if (meeting.preferences[i].projector !== nothing)
                 if (meeting.preferences[i].projector != classroom.projector)
                     x.preferences += 1
                 else
-                    x.preferences -= 1
+                    if x.preferences > 0
+                        x.preferences -= 1
+                    end
                 end
             end
         end
@@ -291,6 +299,120 @@ function calculatePreferenceObjective(meeting::SolutionMeeting, classroom::Class
         end
         return x
     end
+end
+
+"""
+Calculate preference related to professors changing classrooms during the week
+"""
+function calculateProfessorObjective(meeting::SolutionMeeting, classroom::Classroom)
+    x = Objectives()
+
+    type = ""
+    if meeting.classroomID == 0
+        type = "allocate"
+    else
+        if meeting.classroomID == classroom.ID
+            type = "deallocate"
+        else
+            type = "shift"
+        end
+    end
+
+    # println(" - $type")
+
+    if type == "allocate"
+        for i in eachindex(meeting.professors)
+            found = false
+            position = 0
+            for j in eachindex(meeting.professors[i].classrooms)
+                if classroom.ID == meeting.professors[i].classrooms[j].classroomID
+                    position = j
+                    found = true
+                    break
+                end
+            end
+    
+            if found
+                x.professors += length(meeting.professors[i].classrooms) - 1
+            else
+                if length(meeting.professors[i].classrooms) > 0
+                    x.professors += length(meeting.professors[i].classrooms)
+                end
+            end
+        end
+    elseif type == "deallocate"
+        for i in eachindex(meeting.professors)
+            found = false
+            position = 0
+            for j in eachindex(meeting.professors[i].classrooms)
+                if classroom.ID == meeting.professors[i].classrooms[j].classroomID
+                    position = j
+                    found = true
+                    break
+                end
+            end
+    
+            if found
+                if meeting.professors[i].classrooms[position].quantity > 1
+                    x.professors += length(meeting.professors[i].classrooms) - 1
+                else
+                    if length(meeting.professors[i].classrooms) > 2
+                        x.professors += length(meeting.professors[i].classrooms) - 2
+                    end
+                end
+            else
+                println("ERROR: calculateProfessorObjective function - deallocate type can't find classroom in meeting's professors")
+                exit(0)
+            end
+        end
+    elseif type == "shift"
+        for i in eachindex(meeting.professors)
+            found_1 = false
+            found_2 = false
+            position_1 = 0
+            position_2 = 0
+            for j in eachindex(meeting.professors[i].classrooms)
+                if meeting.classroomID == meeting.professors[i].classrooms[j].classroomID
+                    position_1 = j
+                    found_1 = true
+                    break
+                end
+            end
+            for j in eachindex(meeting.professors[i].classrooms)
+                if classroom.ID == meeting.professors[i].classrooms[j].classroomID
+                    position_2 = j
+                    found_2 = true
+                    break
+                end
+            end
+    
+            if !found_1
+                println("ERROR: calculateProfessorObjective function - shift type can't find original classroom in meeting's professors")
+                exit(0)
+            end
+
+            total = length(meeting.professors[i].classrooms)
+
+            if meeting.professors[i].classrooms[position_1].quantity == 1
+                if total > 0
+                    total -= 1
+                end
+            end
+
+            if !found_2
+                total += 1
+            end
+
+            if total > 1
+                x.professors += total - 1
+            end
+        end
+    else
+        println("ERROR: calculateProfessorObjective function - invalid type")
+        exit(0)
+    end
+
+    return x
 end
 
 """
@@ -687,7 +809,7 @@ end
 Calculate solution value
 """
 function calculateSolutionValue(objectives::Objectives)
-    return (objectives.idleness * 1) + (objectives.deallocated * 1) + (objectives.lessThan10 * 1) + (objectives.moreThan10 * 1) + (objectives.preferences * 1)
+    return (objectives.idleness * 1) + (objectives.deallocated * 1) + (objectives.lessThan10 * 1) + (objectives.moreThan10 * 1) + (objectives.preferences * 1) + (objectives.professors * 1)
 end
 
 """
@@ -699,6 +821,7 @@ function copyObjectives(source::Objectives, destiny::Objectives)
     destiny.lessThan10 = source.lessThan10
     destiny.moreThan10 = source.moreThan10
     destiny.preferences = source.preferences
+    destiny.professors = source.professors
 end
 
 """
@@ -747,6 +870,9 @@ function addObjectivesGraphicValues(objectivesGraphic::ObjectivesGraphic, object
     if objectivesGraphic.preferences[length(objectivesGraphic.preferences)][1] != objectives.preferences
         push!(objectivesGraphic.preferences, (objectives.preferences, time))
     end
+    if objectivesGraphic.professors[length(objectivesGraphic.professors)][1] != objectives.professors
+        push!(objectivesGraphic.professors, (objectives.professors, time))
+    end
 
 end
 
@@ -755,21 +881,25 @@ Create output files
 """
 function outputSolution(solution::Solution, costGraphic::Array{CostGraphic, 1}, objectivesGraphic::ObjectivesGraphic, maxTime::Int64, seed::Int64, instanceName::String)
 
-    mkdir("../output/$(instanceName)")
+    directoryName = split(instanceName, ".")[1]
+    try
+        mkdir("../output/$(directoryName)")
+    catch
+    end
 
-    output = open("../output/$(instanceName)/solution_seed-$(seed)_maxTime-$(maxTime).json", "w")
+    output = open("../output/$(directoryName)/solution_seed-$(seed)_maxTime-$(maxTime).json", "w")
     final_dict = OrderedDict("objectives" => solution.objectives, "meetings" => solution.meetings)
     data = JSON.json(final_dict)
     write(output, data)
     close(output)
 
-    output = open("../output/$(instanceName)/costGraphic_seed-$(seed)_maxTime-$(maxTime).json", "w")
+    output = open("../output/$(directoryName)/costGraphic_seed-$(seed)_maxTime-$(maxTime).json", "w")
     final_dict = OrderedDict("points" => costGraphic)
     data = JSON.json(final_dict)
     write(output, data)
     close(output)
 
-    output = open("../output/$(instanceName)/objectivesGraphic_seed-$(seed)_maxTime-$(maxTime).json", "w")
+    output = open("../output/$(directoryName)/objectivesGraphic_seed-$(seed)_maxTime-$(maxTime).json", "w")
     final_dict = OrderedDict("idleness" => objectivesGraphic.idleness, "deallocated" => objectivesGraphic.deallocated, "lessThan10" => objectivesGraphic.lessThan10, "moreThan10" => objectivesGraphic.moreThan10,"preferences" => objectivesGraphic.preferences)
     data = JSON.json(final_dict)
     write(output, data)

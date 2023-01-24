@@ -46,9 +46,10 @@ mutable struct Objectives
     lessThan10::Int64
     moreThan10::Int64
     preferences::Int64
+    professors::Int64
 
-    Objectives(instanceName::String) = new(instanceName, 0, 0, 0, 0, 0)
-    Objectives() = new("", 0, 0, 0, 0, 0)
+    Objectives(instanceName::String) = new(instanceName, 0, 0, 0, 0, 0, 0)
+    Objectives() = new("", 0, 0, 0, 0, 0, 0)
 end
 
 mutable struct Solution
@@ -87,5 +88,6 @@ mutable struct ObjectivesGraphic
     lessThan10::Array{Tuple{Int64, Float64}}
     moreThan10::Array{Tuple{Int64, Float64}}
     preferences::Array{Tuple{Int64, Float64}}
+    professors::Array{Tuple{Int64, Float64}}
 
 end

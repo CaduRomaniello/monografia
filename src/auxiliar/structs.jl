@@ -24,31 +24,31 @@ mutable struct Classroom
     projector::Bool
 end
 
-mutable struct Professor
-    ID::String
-    name::String
-end
+# mutable struct Professor
+#     ID::String
+#     name::String
+# end
 
-mutable struct Subject
-    ID::String
-    name::String
-end
+# mutable struct Subject
+#     ID::String
+#     name::String
+# end
 
-mutable struct Class
-    subjectID::String
-    classID::String
-    vacancies::Int64
-    demand::Int64
-    professors::Array{String, 1}
-end
+# mutable struct Class
+#     subjectID::String
+#     classID::String
+#     vacancies::Int64
+#     demand::Int64
+#     professors::Array{String, 1}
+# end
 
-mutable struct Meeting
-    isPractical::Bool
-    dayOfWeek::Int64
-    subjectID::String
-    classesIDs::Array{String, 1}
-    schedules::Array{Int, 1}
-end
+# mutable struct Meeting
+#     isPractical::Bool
+#     dayOfWeek::Int64
+#     subjectID::String
+#     classesIDs::Array{String, 1}
+#     schedules::Array{Int, 1}
+# end
 
 mutable struct Preference
     category::String

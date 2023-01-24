@@ -151,6 +151,16 @@ function pas(FILE1::String, maxTime::Int64, seed::Int64)
     Greedy algorithm
     =================================================================================================#
 
+    total = 0
+
+    for i in eachindex(solution.meetings)
+        if length(solution.meetings[i].preferences) > 0
+            total += length(solution.meetings[i].preferences)
+        end
+    end
+
+    println(total)
+
     printstyled("Cost before greedy: ", bold = true, color = :green)
     println(calculateSolutionValue(solution.objectives))
     greedy(solution, problem)
@@ -162,10 +172,50 @@ function pas(FILE1::String, maxTime::Int64, seed::Int64)
     printstyled("Finish greedy algorithm at: ", bold = true, color = :yellow)
     print(Dates.day(end_greedy), "/", Dates.month(end_greedy), "/", Dates.year(end_greedy), " ")
     println(Dates.hour(end_greedy), ":", Dates.minute(end_greedy), ":", Dates.second(end_greedy))
-    println("----------------------------------------------------------------------------------")
+    println(solution.objectives)
 
     # checks allocations made by the greedy algorithm
     checkAllocation(solution)
+
+    a = []
+    for i in eachindex(problem.professors)
+        push!(a, (problem.professors[i].code, []))
+    end
+
+    for i in eachindex(solution.meetings)
+        if solution.meetings[i].classroomID == 0
+            continue
+        end
+        for j in eachindex(solution.meetings[i].professors)
+            for k in eachindex(a)
+                if a[k][1] == solution.meetings[i].professors[j].code
+                    achou = false
+                    pos = 0
+                    for m in eachindex(a[k][2])
+                        if a[k][2][m].classroomID == solution.meetings[i].classroomID
+                            achou = true
+                            pos = m
+                            break
+                        end
+                    end
+
+                    if achou
+                        a[k][2][pos].quantity += 1
+                    else
+                        push!(a[k][2], TaughtClassrooms(solution.meetings[i].classroomID, 1))
+                    end
+                end
+            end
+        end
+    end
+
+    total = 0
+    for i in eachindex(a)
+        if length(a[i][2]) > 1
+            total += length(a[i][2]) - 1
+        end
+    end
+    println(total)
 
     #=================================================================================================
     LAHC
@@ -182,7 +232,48 @@ function pas(FILE1::String, maxTime::Int64, seed::Int64)
     printstyled("Finish LAHC algorithm at: ", bold = true, color = :yellow)
     print(Dates.day(end_lahc), "/", Dates.month(end_lahc), "/", Dates.year(end_lahc), " ")
     println(Dates.hour(end_lahc), ":", Dates.minute(end_lahc), ":", Dates.second(end_lahc))
+    println(solution.objectives)
     println("----------------------------------------------------------------------------------")
+
+    a = []
+    for i in eachindex(problem.professors)
+        push!(a, (problem.professors[i].code, []))
+    end
+
+    for i in eachindex(solution.meetings)
+        if solution.meetings[i].classroomID == 0
+            continue
+        end
+        for j in eachindex(solution.meetings[i].professors)
+            for k in eachindex(a)
+                if a[k][1] == solution.meetings[i].professors[j].code
+                    achou = false
+                    pos = 0
+                    for m in eachindex(a[k][2])
+                        if a[k][2][m].classroomID == solution.meetings[i].classroomID
+                            achou = true
+                            pos = m
+                            break
+                        end
+                    end
+
+                    if achou
+                        a[k][2][pos].quantity += 1
+                    else
+                        push!(a[k][2], TaughtClassrooms(solution.meetings[i].classroomID, 1))
+                    end
+                end
+            end
+        end
+    end
+
+    total = 0
+    for i in eachindex(a)
+        if length(a[i][2]) > 1
+            total += length(a[i][2]) - 1
+        end
+    end
+    println(total)
 
     # checks allocations made by the greedy algorithm
     checkAllocation(solution)
@@ -201,3 +292,50 @@ function pas(FILE1::String, maxTime::Int64, seed::Int64)
     # close(output)
 
 end
+
+
+#=
+EXTRA CODE 
+
+* verify professors objective
+    a = []
+    for i in eachindex(problem.professors)
+        push!(a, (problem.professors[i].code, []))
+    end
+
+    for i in eachindex(solution.meetings)
+        if solution.meetings[i].classroomID == 0
+            continue
+        end
+        for j in eachindex(solution.meetings[i].professors)
+            for k in eachindex(a)
+                if a[k][1] == solution.meetings[i].professors[j].code
+                    achou = false
+                    pos = 0
+                    for m in eachindex(a[k][2])
+                        if a[k][2][m].classroomID == solution.meetings[i].classroomID
+                            achou = true
+                            pos = m
+                            break
+                        end
+                    end
+
+                    if achou
+                        a[k][2][pos].quantity += 1
+                    else
+                        push!(a[k][2], TaughtClassrooms(solution.meetings[i].classroomID, 1))
+                    end
+                end
+            end
+        end
+    end
+
+    total = 0
+    for i in eachindex(a)
+        if length(a[i][2]) > 1
+            total += length(a[i][2]) - 1
+        end
+    end
+    println(total)
+
+=#

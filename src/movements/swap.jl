@@ -99,6 +99,14 @@ function startMove(move::Swap, solution::Solution, problem::Problem)
 end
 
 function doMove(move::Swap)
+
+    # println("Meeting 1:")
+    # println(move.meeting_1)
+    # println()
+    # println("Meeting 2:")
+    # println(move.meeting_2)
+    # println()
+    # println("------------------------------------------------------------------")
     
     # creating auxiliar variables to count the objectives
     oldObjectives = Objectives()
@@ -111,11 +119,22 @@ function doMove(move::Swap)
     oldObjectives.deallocated += x.deallocated
     oldObjectives.lessThan10 += x.lessThan10
     oldObjectives.preferences += x.preferences
+    for i in eachindex(move.meeting_1.professors)
+        if length(move.meeting_1.professors[i].classrooms) > 1
+            oldObjectives.professors += length(move.meeting_1.professors[i].classrooms) - 1
+        end
+    end
+
     x = calculateAllocationObjective(move.meeting_2, move.classroom_2)
     oldObjectives.idleness += x.idleness
     oldObjectives.deallocated += x.deallocated
     oldObjectives.lessThan10 += x.lessThan10
     oldObjectives.preferences += x.preferences
+    for i in eachindex(move.meeting_2.professors)
+        if length(move.meeting_2.professors[i].classrooms) > 1
+            oldObjectives.professors += length(move.meeting_2.professors[i].classrooms) - 1
+        end
+    end
     
     # calculating the objectives for the two meetings swaping their classrooms
     y = calculateAllocationObjective(move.meeting_1, move.classroom_2)
@@ -123,11 +142,16 @@ function doMove(move::Swap)
     newObjectives.deallocated += y.deallocated
     newObjectives.lessThan10 += y.lessThan10
     newObjectives.preferences += y.preferences
+    y = calculateProfessorObjective(move.meeting_1, move.classroom_2)
+    newObjectives.professors += y.professors
+
     y = calculateAllocationObjective(move.meeting_2, move.classroom_1)
     newObjectives.idleness += y.idleness
     newObjectives.deallocated += y.deallocated
     newObjectives.lessThan10 += y.lessThan10
     newObjectives.preferences += y.preferences
+    y = calculateProfessorObjective(move.meeting_2, move.classroom_1)
+    newObjectives.professors += y.professors
 
     # calculating preferences objectives for the two meetings before and after the swap
     if length(move.meeting_1.preferences) > 0
@@ -152,6 +176,7 @@ function doMove(move::Swap)
     returnObjectives.lessThan10 += (newObjectives.lessThan10 - oldObjectives.lessThan10)
     returnObjectives.moreThan10 += (newObjectives.moreThan10 - oldObjectives.moreThan10)
     returnObjectives.preferences += (newObjectives.preferences - oldObjectives.preferences)
+    returnObjectives.professors += (newObjectives.professors - oldObjectives.professors)
 
     return returnObjectives
 
@@ -164,11 +189,6 @@ function acceptMove(move::Swap)
 
     schedules = move.meeting_1.schedules
     
-    # println("ID encontro 1: $(move.meeting_1.ID), ID sala 1: $(move.classroom_1.ID), Sala alocada: $(move.meeting_1.classroomID)")
-    # println("ID encontro 2: $(move.meeting_2.ID), ID sala 2: $(move.classroom_2.ID), Sala alocada: $(move.meeting_2.classroomID)")
-    # # println("ID encontro 1: $(move.meeting_1.ID), ID encontro 2: $(move.meeting_2.ID), ID sala 1: $(move.classroom_1.ID), ID sala 2: $(move.classroom_2.ID)")
-    # println("Matriz sala 1 antes: $(day.matrix[schedules[1].ID, move.classroom_1.ID].meetingID), Matriz sala 2 antes: $(day.matrix[schedules[1].ID, move.classroom_2.ID].meetingID)")
-    
     for i in eachindex(schedules)
         day.matrix[schedules[i].ID, move.classroom_1.ID].meetingID = move.meeting_2.ID
         day.matrix[schedules[i].ID, move.classroom_1.ID].status = 1
@@ -176,8 +196,6 @@ function acceptMove(move::Swap)
         day.matrix[schedules[i].ID, move.classroom_2.ID].meetingID = move.meeting_1.ID
         day.matrix[schedules[i].ID, move.classroom_2.ID].status = 1
     end
-
-    # println("Matriz sala 1 depois: $(day.matrix[schedules[1].ID, move.classroom_1.ID].meetingID), Matriz sala 2 depois: $(day.matrix[schedules[1].ID, move.classroom_2.ID].meetingID)")
     
     move.meeting_1.classroomID = move.classroom_2.ID
     move.meeting_1.buildingID = move.classroom_2.buildingID
@@ -185,11 +203,91 @@ function acceptMove(move::Swap)
     move.meeting_2.classroomID = move.classroom_1.ID
     move.meeting_2.buildingID = move.classroom_1.buildingID
 
-    # println("ID encontro 1: $(move.meeting_1.ID), ID sala 1: $(move.classroom_1.ID), Sala alocada: $(move.meeting_1.classroomID)")
-    # println("ID encontro 2: $(move.meeting_2.ID), ID sala 2: $(move.classroom_2.ID), Sala alocada: $(move.meeting_2.classroomID)")
-    # # println("ID encontro 1: $(move.meeting_1.ID), ID encontro 2: $(move.meeting_2.ID), ID sala 1: $(move.classroom_1.ID), ID sala 2: $(move.classroom_2.ID)")
+    # dealing with professors classrooms for meeting_1
+    # removing
+    for i in eachindex(move.meeting_1.professors)
+        found = false
+        position = 0
+        for j in eachindex(move.meeting_1.professors[i].classrooms)
+            if move.classroom_1.ID == move.meeting_1.professors[i].classrooms[j].classroomID
+                position = j
+                found = true
+                break
+            end
+        end
 
-    # println("---------------------------------------------------------")
+        if found
+            if move.meeting_1.professors[i].classrooms[position].quantity > 1
+                move.meeting_1.professors[i].classrooms[position].quantity -= 1
+            else
+                deleteat!(move.meeting_1.professors[i].classrooms, position)
+            end
+        else
+            println("ERRO swap - removing classroom from meeting_1 when accepted")
+        end
+    end
+
+    #adding
+    for i in eachindex(move.meeting_1.professors)
+        found = false
+        position = 0
+        for j in eachindex(move.meeting_1.professors[i].classrooms)
+            if move.classroom_2.ID == move.meeting_1.professors[i].classrooms[j].classroomID
+                position = j
+                found = true
+                break
+            end
+        end
+
+        if found
+            move.meeting_1.professors[i].classrooms[position].quantity += 1
+        else
+            push!(move.meeting_1.professors[i].classrooms, TaughtClassrooms(move.classroom_2.ID, 1))
+        end
+    end
+
+    # dealing with professors classrooms for meeting_2
+    # removing
+    for i in eachindex(move.meeting_2.professors)
+        found = false
+        position = 0
+        for j in eachindex(move.meeting_2.professors[i].classrooms)
+            if move.classroom_2.ID == move.meeting_2.professors[i].classrooms[j].classroomID
+                position = j
+                found = true
+                break
+            end
+        end
+
+        if found
+            if move.meeting_2.professors[i].classrooms[position].quantity > 1
+                move.meeting_2.professors[i].classrooms[position].quantity -= 1
+            else
+                deleteat!(move.meeting_2.professors[i].classrooms, position)
+            end
+        else
+            println("ERRO swap - removing classroom from meeting_2 when accepted")
+        end
+    end
+
+    #adding
+    for i in eachindex(move.meeting_2.professors)
+        found = false
+        position = 0
+        for j in eachindex(move.meeting_2.professors[i].classrooms)
+            if move.classroom_1.ID == move.meeting_2.professors[i].classrooms[j].classroomID
+                position = j
+                found = true
+                break
+            end
+        end
+
+        if found
+            move.meeting_2.professors[i].classrooms[position].quantity += 1
+        else
+            push!(move.meeting_2.professors[i].classrooms, TaughtClassrooms(move.classroom_1.ID, 1))
+        end
+    end
 
 end
 

@@ -97,6 +97,11 @@ function doMove(move::Shift)
     oldObjectives.deallocated += x.deallocated
     oldObjectives.lessThan10 += x.lessThan10
     oldObjectives.preferences += x.preferences
+    for i in eachindex(move.meeting.professors)
+        if length(move.meeting.professors[i].classrooms) > 1
+            oldObjectives.professors += length(move.meeting.professors[i].classrooms) - 1
+        end
+    end
     
     # calculating the objectives when the meeting is shifted to the new classroom
     y = calculateAllocationObjective(move.meeting, move.classroom_destination)
@@ -104,6 +109,8 @@ function doMove(move::Shift)
     newObjectives.deallocated += y.deallocated
     newObjectives.lessThan10 += y.lessThan10
     newObjectives.preferences += y.preferences
+    y = calculateProfessorObjective(move.meeting, move.classroom_destination)
+    newObjectives.professors += y.professors
 
     # calculating preferences objectives if the meeting has preferences
     if length(move.meeting.preferences) > 0
@@ -120,6 +127,7 @@ function doMove(move::Shift)
     returnObjectives.lessThan10 += (newObjectives.lessThan10 - oldObjectives.lessThan10)
     returnObjectives.moreThan10 += (newObjectives.moreThan10 - oldObjectives.moreThan10)
     returnObjectives.preferences += (newObjectives.preferences - oldObjectives.preferences)
+    returnObjectives.professors += (newObjectives.professors - oldObjectives.professors)
 
     return returnObjectives
 
@@ -138,19 +146,51 @@ function acceptMove(move::Shift)
         day.matrix[schedules[i].ID, move.classroom_destination.ID].meetingID = move.meeting.ID
         day.matrix[schedules[i].ID, move.classroom_destination.ID].status = 1
     end
-
-    id = move.meeting.ID
-
-    pos = 0
-    for i in eachindex(move.day.meetings)
-        if move.day.meetings[i].ID == id
-            pos = i
-            break
-        end
-    end
     
     move.meeting.classroomID = move.classroom_destination.ID
     move.meeting.buildingID = move.classroom_destination.buildingID
+
+    # removing classroom from professor
+    for i in eachindex(move.meeting.professors)
+        found = false
+        position = 0
+        for j in eachindex(move.meeting.professors[i].classrooms)
+            if move.classroom_origin.ID == move.meeting.professors[i].classrooms[j].classroomID
+                position = j
+                found = true
+                break
+            end
+        end
+
+        if found
+            if move.meeting.professors[i].classrooms[position].quantity > 1
+                move.meeting.professors[i].classrooms[position].quantity -= 1
+            else
+                deleteat!(move.meeting.professors[i].classrooms, position)
+            end
+        else
+            println("ERRO shift - removing classroom when accepted")
+        end
+    end
+
+    # adding classroom to professor
+    for i in eachindex(move.meeting.professors)
+        found = false
+        position = 0
+        for j in eachindex(move.meeting.professors[i].classrooms)
+            if move.classroom_destination.ID == move.meeting.professors[i].classrooms[j].classroomID
+                position = j
+                found = true
+                break
+            end
+        end
+
+        if found
+            move.meeting.professors[i].classrooms[position].quantity += 1
+        else
+            push!(move.meeting.professors[i].classrooms, TaughtClassrooms(move.classroom_destination.ID, 1))
+        end
+    end
 
 end
 

@@ -30,11 +30,18 @@ mutable struct Classroom
     projector::Bool
 end
 
+mutable struct TaughtClassrooms
+    classroomID::Int64
+    quantity::Int64
+end
+
 mutable struct Professor
     ID::Int64
 
     code::String
     name::String
+
+    classrooms::Array{TaughtClassrooms, 1}
 end
 
 mutable struct Subject
