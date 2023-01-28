@@ -197,14 +197,32 @@ function acceptMove(move::Swap)
         day.matrix[schedules[i].ID, move.classroom_2.ID].status = 1
     end
     
+    println("########################################################")
+    println("Print accept swap")
+    println("move.classroom_1.ID: $(move.classroom_1.ID)")
+    println("move.classroom_2.ID: $(move.classroom_2.ID)")
+    println()
+    println("move.meeting_1.classroomID: $(move.meeting_1.classroomID)")
+    println("move.meeting_1.buildingID: $(move.meeting_1.buildingID)")
     move.meeting_1.classroomID = move.classroom_2.ID
     move.meeting_1.buildingID = move.classroom_2.buildingID
+    println("----------------")
+    println("move.meeting_1.classroomID: $(move.meeting_1.classroomID)")
+    println("move.meeting_1.buildingID: $(move.meeting_1.buildingID)")
+    println()
     
+    println("move.meeting_2.classroomID: $(move.meeting_2.classroomID)")
+    println("move.meeting_2.buildingID: $(move.meeting_2.buildingID)")
     move.meeting_2.classroomID = move.classroom_1.ID
     move.meeting_2.buildingID = move.classroom_1.buildingID
+    println("----------------")
+    println("move.meeting_2.classroomID: $(move.meeting_2.classroomID)")
+    println("move.meeting_2.buildingID: $(move.meeting_2.buildingID)")
+    println()
 
     # dealing with professors classrooms for meeting_1
     # removing
+    println("move.meeting_1.professors: $(move.meeting_1.professors)")
     for i in eachindex(move.meeting_1.professors)
         found = false
         position = 0
@@ -245,9 +263,13 @@ function acceptMove(move::Swap)
             push!(move.meeting_1.professors[i].classrooms, TaughtClassrooms(move.classroom_2.ID, 1))
         end
     end
+    println("----------------")
+    println("move.meeting_1.professors: $(move.meeting_1.professors)")
+    println()
 
     # dealing with professors classrooms for meeting_2
     # removing
+    println("move.meeting_2.professors: $(move.meeting_2.professors)")
     for i in eachindex(move.meeting_2.professors)
         found = false
         position = 0
@@ -288,6 +310,10 @@ function acceptMove(move::Swap)
             push!(move.meeting_2.professors[i].classrooms, TaughtClassrooms(move.classroom_1.ID, 1))
         end
     end
+
+    println("----------------")
+    println("move.meeting_2.professors: $(move.meeting_2.professors)")
+    println()
 
 end
 

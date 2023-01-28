@@ -137,6 +137,73 @@ function pas(FILE1::String, maxTime::Int64, seed::Int64)
     # println(x.objectives)
     # println(doMove(x))
 
+    count = 0
+    for i in eachindex(professors)
+        segunda = Array{Bool, 1}(undef, length(schedules)) 
+        terca = Array{Bool, 1}(undef, length(schedules)) 
+        quarta = Array{Bool, 1}(undef, length(schedules)) 
+        quinta = Array{Bool, 1}(undef, length(schedules)) 
+        sexta = Array{Bool, 1}(undef, length(schedules)) 
+        sabado = Array{Bool, 1}(undef, length(schedules)) 
+        cod = professors[i].code
+        for j in eachindex(meetings)
+            tem = false
+            for k in eachindex(meetings[j].professors)
+                if meetings[j].professors[k].code == cod
+                    for m in eachindex(meetings[j].schedules)
+                        if meetings[j].dayOfWeek == 2
+                            if segunda[meetings[j].schedules[m].ID] == true
+                                println("ERRO")
+                                count += 1
+                            else
+                                segunda[meetings[j].schedules[m].ID] = true
+                            end
+                        elseif meetings[j].dayOfWeek == 3
+                            if terca[meetings[j].schedules[m].ID] == true
+                                println("ERRO")
+                                count += 1
+                            else
+                                terca[meetings[j].schedules[m].ID] = true
+                            end
+                        elseif meetings[j].dayOfWeek == 4
+                            if quarta[meetings[j].schedules[m].ID] == true
+                                println("ERRO")
+                                count += 1
+                            else
+                                quarta[meetings[j].schedules[m].ID] = true
+                            end
+                        elseif meetings[j].dayOfWeek == 5
+                            if quinta[meetings[j].schedules[m].ID] == true
+                                println("ERRO")
+                                count += 1
+                            else
+                                quinta[meetings[j].schedules[m].ID] = true
+                            end
+                        elseif meetings[j].dayOfWeek == 6
+                            if sexta[meetings[j].schedules[m].ID] == true
+                                println("ERRO")
+                                count += 1
+                            else
+                                sexta[meetings[j].schedules[m].ID] = true
+                            end
+                        elseif meetings[j].dayOfWeek == 7
+                            if sabado[meetings[j].schedules[m].ID] == true
+                                println("ERRO")
+                                count += 1
+                            else
+                                sabado[meetings[j].schedules[m].ID] = true
+                            end
+                        else
+                        end
+                    end
+                end
+            end
+        end
+    end
+    println(count)
+    println(length(meetings))
+    exit(0)
+
     #=================================================================================================
     Functions that test if the movements are working correctly
     =================================================================================================#

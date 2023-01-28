@@ -276,7 +276,14 @@ function main()
             codClass = string(classes[j].subjectCode, "-", classes[j].classCode)
             if codMeeting == codClass
                 push!(posTurma, j)
+                break
             end
+        end
+    end
+
+    for i in eachindex(classes)
+        if length(classes[posTurma[i]].professors) != 0
+            println("Li errado")
         end
     end
 
@@ -307,17 +314,20 @@ function main()
             end
     
             ocupado = false
-            for k in horarios
-                if day[k]
+            for k in eachindex(horarios)
+                # print(day[k], " ")
+                if day[horarios[k]]
                     ocupado = true
                     break
                 end
             end
+            # println()
     
             if !ocupado
+                # println("alocou")
                 alocou = true
-                for k in horarios
-                    day[k] = true
+                for k in eachindex(horarios)
+                    day[horarios[k]] = true
                 end
                 push!(classes[posTurma[i]].professors, pwt[x].code)
                 break
@@ -330,9 +340,9 @@ function main()
     end
 
     for i in eachindex(classes)
-        if length(classes[i].professors) == 0
+        if length(classes[i].professors) != 1
             if i in posTurma
-                println("Sem prof")
+                println("Sem prof: $(length(classes[i].professors))")
             end
         end
     end
