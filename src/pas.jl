@@ -51,9 +51,9 @@ function pas(FILE1::String, maxTime::Int64, seed::Int64)
     readSubjects(problemData, subjects)
 
     # Reading classes
-    classes = Array{Class, 1}()
-    classesSize = length(problemData["classes"])
-    readClasses(problemData, classes)
+    # classes = Array{Class, 1}()
+    # classesSize = length(problemData["classes"])
+    # readClasses(problemData, classes)
 
     # Reading meetings
     instanceMeetings = Array{Meeting, 1}()
@@ -76,7 +76,8 @@ function pas(FILE1::String, maxTime::Int64, seed::Int64)
     readReservations(problemData, reservations)
 
     # Creating problems variable
-    problem = Problem(schedules, buildings, classrooms, professors, subjects, classes, instanceMeetings, preferences, restrictions, reservations, FILE1, maxTime, seed)
+    # problem = Problem(schedules, buildings, classrooms, professors, subjects, classes, instanceMeetings, preferences, restrictions, reservations, FILE1, maxTime, seed)
+    problem = Problem(schedules, buildings, classrooms, professors, subjects, instanceMeetings, preferences, restrictions, reservations, FILE1, maxTime, seed)
 
     #=================================================================================================
     Initializing the variables that will be manipulated during the algorithm
@@ -137,72 +138,7 @@ function pas(FILE1::String, maxTime::Int64, seed::Int64)
     # println(x.objectives)
     # println(doMove(x))
 
-    count = 0
-    for i in eachindex(professors)
-        segunda = Array{Bool, 1}(undef, length(schedules)) 
-        terca = Array{Bool, 1}(undef, length(schedules)) 
-        quarta = Array{Bool, 1}(undef, length(schedules)) 
-        quinta = Array{Bool, 1}(undef, length(schedules)) 
-        sexta = Array{Bool, 1}(undef, length(schedules)) 
-        sabado = Array{Bool, 1}(undef, length(schedules)) 
-        cod = professors[i].code
-        for j in eachindex(meetings)
-            tem = false
-            for k in eachindex(meetings[j].professors)
-                if meetings[j].professors[k].code == cod
-                    for m in eachindex(meetings[j].schedules)
-                        if meetings[j].dayOfWeek == 2
-                            if segunda[meetings[j].schedules[m].ID] == true
-                                println("ERRO")
-                                count += 1
-                            else
-                                segunda[meetings[j].schedules[m].ID] = true
-                            end
-                        elseif meetings[j].dayOfWeek == 3
-                            if terca[meetings[j].schedules[m].ID] == true
-                                println("ERRO")
-                                count += 1
-                            else
-                                terca[meetings[j].schedules[m].ID] = true
-                            end
-                        elseif meetings[j].dayOfWeek == 4
-                            if quarta[meetings[j].schedules[m].ID] == true
-                                println("ERRO")
-                                count += 1
-                            else
-                                quarta[meetings[j].schedules[m].ID] = true
-                            end
-                        elseif meetings[j].dayOfWeek == 5
-                            if quinta[meetings[j].schedules[m].ID] == true
-                                println("ERRO")
-                                count += 1
-                            else
-                                quinta[meetings[j].schedules[m].ID] = true
-                            end
-                        elseif meetings[j].dayOfWeek == 6
-                            if sexta[meetings[j].schedules[m].ID] == true
-                                println("ERRO")
-                                count += 1
-                            else
-                                sexta[meetings[j].schedules[m].ID] = true
-                            end
-                        elseif meetings[j].dayOfWeek == 7
-                            if sabado[meetings[j].schedules[m].ID] == true
-                                println("ERRO")
-                                count += 1
-                            else
-                                sabado[meetings[j].schedules[m].ID] = true
-                            end
-                        else
-                        end
-                    end
-                end
-            end
-        end
-    end
-    println(count)
-    println(length(meetings))
-    exit(0)
+    # verifyProfessors(professors, meetings, schedules)
 
     #=================================================================================================
     Functions that test if the movements are working correctly
@@ -218,15 +154,15 @@ function pas(FILE1::String, maxTime::Int64, seed::Int64)
     Greedy algorithm
     =================================================================================================#
 
-    total = 0
+    # total = 0
 
-    for i in eachindex(solution.meetings)
-        if length(solution.meetings[i].preferences) > 0
-            total += length(solution.meetings[i].preferences)
-        end
-    end
+    # for i in eachindex(solution.meetings)
+    #     if length(solution.meetings[i].preferences) > 0
+    #         total += length(solution.meetings[i].preferences)
+    #     end
+    # end
 
-    println(total)
+    # println(total)
 
     printstyled("Cost before greedy: ", bold = true, color = :green)
     println(calculateSolutionValue(solution.objectives))
@@ -239,50 +175,50 @@ function pas(FILE1::String, maxTime::Int64, seed::Int64)
     printstyled("Finish greedy algorithm at: ", bold = true, color = :yellow)
     print(Dates.day(end_greedy), "/", Dates.month(end_greedy), "/", Dates.year(end_greedy), " ")
     println(Dates.hour(end_greedy), ":", Dates.minute(end_greedy), ":", Dates.second(end_greedy))
-    println(solution.objectives)
+    # println(solution.objectives)
 
     # checks allocations made by the greedy algorithm
     checkAllocation(solution)
 
-    a = []
-    for i in eachindex(problem.professors)
-        push!(a, (problem.professors[i].code, []))
-    end
+    # a = []
+    # for i in eachindex(problem.professors)
+    #     push!(a, (problem.professors[i].code, []))
+    # end
 
-    for i in eachindex(solution.meetings)
-        if solution.meetings[i].classroomID == 0
-            continue
-        end
-        for j in eachindex(solution.meetings[i].professors)
-            for k in eachindex(a)
-                if a[k][1] == solution.meetings[i].professors[j].code
-                    achou = false
-                    pos = 0
-                    for m in eachindex(a[k][2])
-                        if a[k][2][m].classroomID == solution.meetings[i].classroomID
-                            achou = true
-                            pos = m
-                            break
-                        end
-                    end
+    # for i in eachindex(solution.meetings)
+    #     if solution.meetings[i].classroomID == 0
+    #         continue
+    #     end
+    #     for j in eachindex(solution.meetings[i].professors)
+    #         for k in eachindex(a)
+    #             if a[k][1] == solution.meetings[i].professors[j].code
+    #                 achou = false
+    #                 pos = 0
+    #                 for m in eachindex(a[k][2])
+    #                     if a[k][2][m].classroomID == solution.meetings[i].classroomID
+    #                         achou = true
+    #                         pos = m
+    #                         break
+    #                     end
+    #                 end
 
-                    if achou
-                        a[k][2][pos].quantity += 1
-                    else
-                        push!(a[k][2], TaughtClassrooms(solution.meetings[i].classroomID, 1))
-                    end
-                end
-            end
-        end
-    end
+    #                 if achou
+    #                     a[k][2][pos].quantity += 1
+    #                 else
+    #                     push!(a[k][2], TaughtClassrooms(solution.meetings[i].classroomID, 1))
+    #                 end
+    #             end
+    #         end
+    #     end
+    # end
 
-    total = 0
-    for i in eachindex(a)
-        if length(a[i][2]) > 1
-            total += length(a[i][2]) - 1
-        end
-    end
-    println(total)
+    # total = 0
+    # for i in eachindex(a)
+    #     if length(a[i][2]) > 1
+    #         total += length(a[i][2]) - 1
+    #     end
+    # end
+    # println(total)
 
     #=================================================================================================
     LAHC
@@ -299,51 +235,53 @@ function pas(FILE1::String, maxTime::Int64, seed::Int64)
     printstyled("Finish LAHC algorithm at: ", bold = true, color = :yellow)
     print(Dates.day(end_lahc), "/", Dates.month(end_lahc), "/", Dates.year(end_lahc), " ")
     println(Dates.hour(end_lahc), ":", Dates.minute(end_lahc), ":", Dates.second(end_lahc))
-    println(solution.objectives)
+    # println(solution.objectives)
     println("----------------------------------------------------------------------------------")
 
-    a = []
-    for i in eachindex(problem.professors)
-        push!(a, (problem.professors[i].code, []))
-    end
+    # a = []
+    # for i in eachindex(problem.professors)
+    #     push!(a, (problem.professors[i].code, []))
+    # end
 
-    for i in eachindex(solution.meetings)
-        if solution.meetings[i].classroomID == 0
-            continue
-        end
-        for j in eachindex(solution.meetings[i].professors)
-            for k in eachindex(a)
-                if a[k][1] == solution.meetings[i].professors[j].code
-                    achou = false
-                    pos = 0
-                    for m in eachindex(a[k][2])
-                        if a[k][2][m].classroomID == solution.meetings[i].classroomID
-                            achou = true
-                            pos = m
-                            break
-                        end
-                    end
+    # for i in eachindex(solution.meetings)
+    #     if solution.meetings[i].classroomID == 0
+    #         continue
+    #     end
+    #     for j in eachindex(solution.meetings[i].professors)
+    #         for k in eachindex(a)
+    #             if a[k][1] == solution.meetings[i].professors[j].code
+    #                 achou = false
+    #                 pos = 0
+    #                 for m in eachindex(a[k][2])
+    #                     if a[k][2][m].classroomID == solution.meetings[i].classroomID
+    #                         achou = true
+    #                         pos = m
+    #                         break
+    #                     end
+    #                 end
 
-                    if achou
-                        a[k][2][pos].quantity += 1
-                    else
-                        push!(a[k][2], TaughtClassrooms(solution.meetings[i].classroomID, 1))
-                    end
-                end
-            end
-        end
-    end
+    #                 if achou
+    #                     a[k][2][pos].quantity += 1
+    #                 else
+    #                     push!(a[k][2], TaughtClassrooms(solution.meetings[i].classroomID, 1))
+    #                 end
+    #             end
+    #         end
+    #     end
+    # end
 
-    total = 0
-    for i in eachindex(a)
-        if length(a[i][2]) > 1
-            total += length(a[i][2]) - 1
-        end
-    end
-    println(total)
+    # total = 0
+    # for i in eachindex(a)
+    #     if length(a[i][2]) > 1
+    #         total += length(a[i][2]) - 1
+    #     end
+    # end
+    # println(total)
 
     # checks allocations made by the greedy algorithm
     checkAllocation(solution)
+
+    exit(0)
 
     #=================================================================================================
     Output solution

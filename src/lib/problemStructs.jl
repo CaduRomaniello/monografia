@@ -66,9 +66,12 @@ mutable struct Meeting
 
     isPractical::Bool
     dayOfWeek::Int64
+    vacancies::Int64
+    demand::Int64
     subjectCode::String
-    classesCodes::Array{String, 1}
-    schedules::Array{Int, 1}
+    classes::Array{String, 1}
+    schedules::Array{Int64, 1}
+    professors::Array{String, 1}
 end
 
 mutable struct Preference
@@ -108,7 +111,7 @@ mutable struct Problem
     classrooms::Array{Classroom, 1}
     professors::Array{Professor, 1}
     subjects::Array{Subject, 1}
-    classes::Array{Class, 1}
+    # classes::Array{Class, 1}
     meetings::Array{Meeting, 1}
     preferences::Array{Preference, 1}
     restrictions::Array{Restriction, 1}

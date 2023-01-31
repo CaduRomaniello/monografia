@@ -126,9 +126,9 @@ function LAHC(solution::Solution, problem::Problem, listSize::Int64, maxTime::In
         # getting the solutions that will be used in the comparisons in this iteration
         atualCost = list[listPosition]
 
-        # randomMove = rand(Float64)
+        randomMove = rand(Float64)
         # println(randomMove)
-        randomMove = 0.9
+        # randomMove = 0.9
 
         if randomMove <= 0 && randomMove < probabilities[1]                    # allocate movement
             # println("Allocate")
@@ -298,13 +298,13 @@ function LAHC(solution::Solution, problem::Problem, listSize::Int64, maxTime::In
             else
                 # println("Worse")
                 # call learning automaton
-                # automaton_F1(movementsProbabilities, alpha, 0, chosenMovement)
+                automaton_F1(movementsProbabilities, alpha, 0, chosenMovement)
 
-                # for i = 1:length(movementsProbabilities)
-                #     if (i != chosenMovement)
-                #         automaton_F2(movementsProbabilities, alpha, 0, i)
-                #     end
-                # end
+                for i = 1:length(movementsProbabilities)
+                    if (i != chosenMovement)
+                        automaton_F2(movementsProbabilities, alpha, 0, i)
+                    end
+                end
             end
         end
 
@@ -321,13 +321,13 @@ function LAHC(solution::Solution, problem::Problem, listSize::Int64, maxTime::In
             push!(costGraphic, costData)
 
             # call learning automaton
-            # automaton_F1(movementsProbabilities, alpha, 1, chosenMovement)
+            automaton_F1(movementsProbabilities, alpha, 1, chosenMovement)
 
-            # for i = 1:length(movementsProbabilities)
-            #     if (i != chosenMovement)
-            #         automaton_F2(movementsProbabilities, alpha, 1, i)
-            #     end
-            # end
+            for i = 1:length(movementsProbabilities)
+                if (i != chosenMovement)
+                    automaton_F2(movementsProbabilities, alpha, 1, i)
+                end
+            end
 
         end
 

@@ -82,54 +82,43 @@ function createSolutionMeetings(problem::Problem)
     for i in eachindex(problem.meetings)
 
         # push to SolutionMeeting Array
-        push!(x, SolutionMeeting(i, problem.meetings[i].isPractical, problem.meetings[i].dayOfWeek, problem.meetings[i].subjectCode, problem.meetings[i].classesCodes, [], 0, 0, [], "", 0, 0, [], []))
+        push!(x, SolutionMeeting(i, problem.meetings[i].isPractical, problem.meetings[i].dayOfWeek, problem.meetings[i].subjectCode, problem.meetings[i].classes, [], problem.meetings[i].vacancies, problem.meetings[i].demand, [], "", 0, 0, [], []))
 
         # push each schedule into SolutionMeeting
         for j in eachindex(problem.meetings[i].schedules)
             push!(x[i].schedules, problem.schedules[problem.meetings[i].schedules[j]])
         end
 
-        # finding all the classes that this meeting have
-        for j in eachindex(problem.meetings[i].classesCodes)
-            meetingCode = string(problem.meetings[i].subjectCode, "-", problem.meetings[i].classesCodes[j])
-            for k in eachindex(problem.classes)
-                classCode = string(problem.classes[k].subjectCode, "-", problem.classes[k].classCode)
+        # Finding all professors and its preferences and restrictions
+        for j in eachindex(problem.meetings[i].professors)
+            for k in eachindex(problem.professors)
+                if problem.professors[k].code == problem.meetings[i].professors[j]
+                    push!(x[i].professors, problem.professors[k])
 
-                if meetingCode == classCode
-                    # println(meetingCode, " / ", classCode)
-                    x[i].vacancies += problem.classes[k].vacancies
-                    x[i].demand += problem.classes[k].demand
-
-                    # finding all professors for this meeting
-                    for m in eachindex(problem.classes[k].professors)
-                        for n in eachindex(problem.professors)
-                            if problem.classes[k].professors[m] == problem.professors[n].code
-                                push!(x[i].professors, problem.professors[n])
-
-                                # finding all professor preferences for this meeting
-                                for t in eachindex(problem.preferences)
-                                    if problem.professors[n].code == problem.preferences[t].categoryCode
-                                        push!(x[i].preferences, problem.preferences[t])
-                                        break
-                                    end
-                                end
-                    
-                                # finding all professor restrictions for this meeting
-                                for t in eachindex(problem.restrictions)
-                                    if problem.professors[n].code == problem.restrictions[t].categoryCode
-                                        push!(x[i].restrictions, problem.restrictions[t])
-                                        break
-                                    end
-                                end
-
-                                break
-                            end
+                    # finding all professor preferences for this meeting
+                    for t in eachindex(problem.preferences)
+                        if problem.professors[k].code == problem.preferences[t].categoryCode
+                            push!(x[i].preferences, problem.preferences[t])
+                            break
                         end
                     end
-                    
+        
+                    # finding all professor restrictions for this meeting
+                    for t in eachindex(problem.restrictions)
+                        if problem.professors[k].code == problem.restrictions[t].categoryCode
+                            push!(x[i].restrictions, problem.restrictions[t])
+                            break
+                        end
+                    end
+
                     break
                 end
             end
+        end
+
+        # finding all the classes's preferences and restrictions that this meeting have
+        for j in eachindex(problem.meetings[i].classes)
+            meetingCode = string(problem.meetings[i].subjectCode, "-", problem.meetings[i].classes[j])
 
             # finding all class preferences for this meeting
             for k in eachindex(problem.preferences)
@@ -904,4 +893,75 @@ function outputSolution(solution::Solution, costGraphic::Array{CostGraphic, 1}, 
     data = JSON.json(final_dict)
     write(output, data)
     close(output)
+end
+
+"""
+Verify professors data consistence
+"""
+function verifyProfessors(professors, meetings, schedules)
+    count = 0
+    for i in eachindex(professors)
+        segunda = Array{Bool, 1}(undef, length(schedules)) 
+        terca = Array{Bool, 1}(undef, length(schedules)) 
+        quarta = Array{Bool, 1}(undef, length(schedules)) 
+        quinta = Array{Bool, 1}(undef, length(schedules)) 
+        sexta = Array{Bool, 1}(undef, length(schedules)) 
+        sabado = Array{Bool, 1}(undef, length(schedules)) 
+        cod = professors[i].code
+        for j in eachindex(meetings)
+            tem = false
+            for k in eachindex(meetings[j].professors)
+                if meetings[j].professors[k].code == cod
+                    for m in eachindex(meetings[j].schedules)
+                        if meetings[j].dayOfWeek == 2
+                            if segunda[meetings[j].schedules[m].ID] == true
+                                println("ERRO")
+                                count += 1
+                            else
+                                segunda[meetings[j].schedules[m].ID] = true
+                            end
+                        elseif meetings[j].dayOfWeek == 3
+                            if terca[meetings[j].schedules[m].ID] == true
+                                println("ERRO")
+                                count += 1
+                            else
+                                terca[meetings[j].schedules[m].ID] = true
+                            end
+                        elseif meetings[j].dayOfWeek == 4
+                            if quarta[meetings[j].schedules[m].ID] == true
+                                println("ERRO")
+                                count += 1
+                            else
+                                quarta[meetings[j].schedules[m].ID] = true
+                            end
+                        elseif meetings[j].dayOfWeek == 5
+                            if quinta[meetings[j].schedules[m].ID] == true
+                                println("ERRO")
+                                count += 1
+                            else
+                                quinta[meetings[j].schedules[m].ID] = true
+                            end
+                        elseif meetings[j].dayOfWeek == 6
+                            if sexta[meetings[j].schedules[m].ID] == true
+                                println("ERRO")
+                                count += 1
+                            else
+                                sexta[meetings[j].schedules[m].ID] = true
+                            end
+                        elseif meetings[j].dayOfWeek == 7
+                            if sabado[meetings[j].schedules[m].ID] == true
+                                println("ERRO")
+                                count += 1
+                            else
+                                sabado[meetings[j].schedules[m].ID] = true
+                            end
+                        else
+                        end
+                    end
+                end
+            end
+        end
+    end
+    println(count)
+    println(length(meetings))
 end

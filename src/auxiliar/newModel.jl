@@ -82,7 +82,7 @@ mutable struct MeetingOutput
     dayOfWeek::Int64
     vacancies::Int64
     demand::Int64
-    subjectID::String
+    subjectCode::String
     classes::Array{String, 1}
     schedules::Array{Int64, 1}
     professors::Array{String, 1}

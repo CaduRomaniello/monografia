@@ -4,8 +4,8 @@ mutable struct SolutionMeeting
 
     isPractical::Bool
     dayOfWeek::Int64
-    subjectID::String
-    classesIDs::Array{String, 1}
+    subjectCode::String
+    classes::Array{String, 1}
     schedules::Array{Schedule, 1}
 
     vacancies::Int64

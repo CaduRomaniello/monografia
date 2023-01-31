@@ -110,17 +110,23 @@ function readMeetings(problemData, meetings::Array{Meeting, 1})
 
         isPractical = problemData["meetings"][i]["isPractical"]
         dayOfWeek = problemData["meetings"][i]["dayOfWeek"]
+        vacancies = problemData["meetings"][i]["vacancies"]
+        demand = problemData["meetings"][i]["demand"]
         subjectCode = problemData["meetings"][i]["subjectCode"]
         classesCodes = []
-        for j = 1:length(problemData["meetings"][i]["classesCodes"])
-            push!(classesCodes, problemData["meetings"][i]["classesCodes"][j])
+        for j = 1:length(problemData["meetings"][i]["classes"])
+            push!(classesCodes, problemData["meetings"][i]["classes"][j])
         end
         schedules = []
         for j = 1:length(problemData["meetings"][i]["schedules"])
             push!(schedules, problemData["meetings"][i]["schedules"][j])
         end
+        professors = []
+        for j = 1:length(problemData["meetings"][i]["professors"])
+            push!(professors, problemData["meetings"][i]["professors"][j])
+        end
 
-        meeting = Meeting(i, isPractical, dayOfWeek, subjectCode, classesCodes, schedules)
+        meeting = Meeting(i, isPractical, dayOfWeek, vacancies, demand, subjectCode, classesCodes, schedules, professors)
 
         push!(meetings, meeting)
 
