@@ -798,7 +798,7 @@ end
 Calculate solution value
 """
 function calculateSolutionValue(objectives::Objectives)
-    return (objectives.idleness * 1) + (objectives.deallocated * 1) + (objectives.lessThan10 * 1) + (objectives.moreThan10 * 1) + (objectives.preferences * 1) + (objectives.professors * 1)
+    return (objectives.idleness * 1) + (objectives.deallocated * 100) + (objectives.lessThan10 * 10) + (objectives.moreThan10 * 100) + (objectives.preferences * 10) + (objectives.professors * 10)
 end
 
 """
@@ -888,11 +888,11 @@ function outputSolution(solution::Solution, costGraphic::Array{CostGraphic, 1}, 
     write(output, data)
     close(output)
 
-    output = open("../output/$(directoryName)/objectivesGraphic_seed-$(seed)_maxTime-$(maxTime).json", "w")
-    final_dict = OrderedDict("idleness" => objectivesGraphic.idleness, "deallocated" => objectivesGraphic.deallocated, "lessThan10" => objectivesGraphic.lessThan10, "moreThan10" => objectivesGraphic.moreThan10,"preferences" => objectivesGraphic.preferences)
-    data = JSON.json(final_dict)
-    write(output, data)
-    close(output)
+    # output = open("../output/$(directoryName)/objectivesGraphic_seed-$(seed)_maxTime-$(maxTime).json", "w")
+    # final_dict = OrderedDict("idleness" => objectivesGraphic.idleness, "deallocated" => objectivesGraphic.deallocated, "lessThan10" => objectivesGraphic.lessThan10, "moreThan10" => objectivesGraphic.moreThan10,"preferences" => objectivesGraphic.preferences)
+    # data = JSON.json(final_dict)
+    # write(output, data)
+    # close(output)
 end
 
 """

@@ -175,6 +175,7 @@ function pas(FILE1::String, maxTime::Int64, seed::Int64)
     printstyled("Finish greedy algorithm at: ", bold = true, color = :yellow)
     print(Dates.day(end_greedy), "/", Dates.month(end_greedy), "/", Dates.year(end_greedy), " ")
     println(Dates.hour(end_greedy), ":", Dates.minute(end_greedy), ":", Dates.second(end_greedy))
+    println("----------------------------------------------------------------------------------")
     # println(solution.objectives)
 
     # checks allocations made by the greedy algorithm
@@ -281,7 +282,7 @@ function pas(FILE1::String, maxTime::Int64, seed::Int64)
     # checks allocations made by the greedy algorithm
     checkAllocation(solution)
 
-    exit(0)
+    # exit(0)
 
     #=================================================================================================
     Output solution
