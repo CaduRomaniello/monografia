@@ -798,7 +798,7 @@ end
 Calculate solution value
 """
 function calculateSolutionValue(objectives::Objectives)
-    return (objectives.idleness * 1) + (objectives.deallocated * 100) + (objectives.lessThan10 * 10) + (objectives.moreThan10 * 100) + (objectives.preferences * 10) + (objectives.professors * 10)
+    return (objectives.idleness * 1) + (objectives.deallocated * 1) + (objectives.lessThan10 * 1) + (objectives.moreThan10 * 1) + (objectives.preferences * 1) + (objectives.professors * 1)
 end
 
 """

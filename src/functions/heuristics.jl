@@ -347,46 +347,46 @@ function LAHC(solution::Solution, problem::Problem, listSize::Int64, maxTime::In
 
         endTime = Dates.now()
 
-        checkAllocation(solution)
+        # checkAllocation(solution)
 
-        a = []
-        for i in eachindex(problem.professors)
-            push!(a, (problem.professors[i].code, []))
-        end
+        # a = []
+        # for i in eachindex(problem.professors)
+        #     push!(a, (problem.professors[i].code, []))
+        # end
 
-        for i in eachindex(solution.meetings)
-            if solution.meetings[i].classroomID == 0
-                continue
-            end
-            for j in eachindex(solution.meetings[i].professors)
-                for k in eachindex(a)
-                    if a[k][1] == solution.meetings[i].professors[j].code
-                        achou = false
-                        pos = 0
-                        for m in eachindex(a[k][2])
-                            if a[k][2][m].classroomID == solution.meetings[i].classroomID
-                                achou = true
-                                pos = m
-                                break
-                            end
-                        end
+        # for i in eachindex(solution.meetings)
+        #     if solution.meetings[i].classroomID == 0
+        #         continue
+        #     end
+        #     for j in eachindex(solution.meetings[i].professors)
+        #         for k in eachindex(a)
+        #             if a[k][1] == solution.meetings[i].professors[j].code
+        #                 achou = false
+        #                 pos = 0
+        #                 for m in eachindex(a[k][2])
+        #                     if a[k][2][m].classroomID == solution.meetings[i].classroomID
+        #                         achou = true
+        #                         pos = m
+        #                         break
+        #                     end
+        #                 end
 
-                        if achou
-                            a[k][2][pos].quantity += 1
-                        else
-                            push!(a[k][2], TaughtClassrooms(solution.meetings[i].classroomID, 1))
-                        end
-                    end
-                end
-            end
-        end
+        #                 if achou
+        #                     a[k][2][pos].quantity += 1
+        #                 else
+        #                     push!(a[k][2], TaughtClassrooms(solution.meetings[i].classroomID, 1))
+        #                 end
+        #             end
+        #         end
+        #     end
+        # end
 
-        total = 0
-        for i in eachindex(a)
-            if length(a[i][2]) > 1
-                total += length(a[i][2]) - 1
-            end
-        end
+        # total = 0
+        # for i in eachindex(a)
+        #     if length(a[i][2]) > 1
+        #         total += length(a[i][2]) - 1
+        #     end
+        # end
         # println(total, " - ", solution.objectives.professors)
         if total != solution.objectives.professors
             println("ERRO")

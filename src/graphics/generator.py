@@ -3,6 +3,7 @@ import plotly.express as px
 import sys
 import os
 import json
+import plotly.express as px
 
 direct = "%s"%(os.getcwd())
 fig = go.Figure()
@@ -61,38 +62,49 @@ def plotGraph(argv):
     graphClassExec04 = Graph()
     graphClassExec05 = Graph()
 
-    graphClassArray = [graphClassExec01, graphClassExec02, graphClassExec03, graphClassExec04, graphClassExec05]
-    solucaoMedia = 0
-
     # for i in range(5):
     #     file = "pas-%s-%s-preferencias-dados-reais_S%d_T%s.txt"%(str(ano), str(semestre), seed[i], str(tempo))
     #     readFile(graphClassArray[i], file)
 
-    readFile(graphClassArray[0], "../../output/newModel/1-10-100-1000/costGraphic_seed-1_maxTime-900.json")
-    readFile(graphClassArray[1], "../../output/newModel/1-10-100-1000/costGraphic_seed-2_maxTime-900.json")
-    readFile(graphClassArray[2], "../../output/newModel/1-10-100-1000/costGraphic_seed-3_maxTime-900.json")
-    readFile(graphClassArray[3], "../../output/newModel/1-10-100-1000/costGraphic_seed-4_maxTime-900.json")
-    readFile(graphClassArray[4], "../../output/newModel/1-10-100-1000/costGraphic_seed-5_maxTime-900.json")
+    graphClassArray = []
+    for i in range(20):
+        graphClassArray.append(Graph())
+    solucaoMedia = 0
+
+    for i in range(20):
+        readFile(graphClassArray[i], f"../../output/newModel/original/costGraphic_seed-{i+1}_maxTime-900.json")
+
+    # readFile(graphClassArray[0], "../../output/newModel/1-10-100-1000/costGraphic_seed-1_maxTime-900.json")
+    # readFile(graphClassArray[1], "../../output/newModel/1-10-100-1000/costGraphic_seed-2_maxTime-900.json")
+    # readFile(graphClassArray[2], "../../output/newModel/1-10-100-1000/costGraphic_seed-3_maxTime-900.json")
+    # readFile(graphClassArray[3], "../../output/newModel/1-10-100-1000/costGraphic_seed-4_maxTime-900.json")
+    # readFile(graphClassArray[4], "../../output/newModel/1-10-100-1000/costGraphic_seed-5_maxTime-900.json")
     # exit(0)
     
     title = "GAP all 1 -> 900s"
-    fileOutput = "GAP_1-10-100-1000_900s"
+    fileOutput = "GAP_all-1_900s"
 
     # Calculando GAP
-    menor = graphClassExec01.executionCost[len(graphClassExec01.executionCost) - 1]
-    for i in range(len(graphClassArray)):
-        size = len(graphClassArray[i].executionCost) - 1
-        if graphClassArray[i].executionCost[size] <= menor:
-            menor = graphClassArray[i].executionCost[size]
+    # menor = graphClassExec01.executionCost[len(graphClassExec01.executionCost) - 1]
+    # for i in range(len(graphClassArray)):
+    #     size = len(graphClassArray[i].executionCost) - 1
+    #     if graphClassArray[i].executionCost[size] <= menor:
+    #         menor = graphClassArray[i].executionCost[size]
  
     # Atualizando vetor de custos com GAP
-    gapExec01 = Graph()
-    gapExec02 = Graph()
-    gapExec03 = Graph()
-    gapExec04 = Graph()
-    gapExec05 = Graph()
+    # gapExec01 = Graph()
+    # gapExec02 = Graph()
+    # gapExec03 = Graph()
+    # gapExec04 = Graph()
+    # gapExec05 = Graph()
 
-    gapArray = [gapExec01, gapExec02, gapExec03, gapExec04, gapExec05]
+    # gapArray = [gapExec01, gapExec02, gapExec03, gapExec04, gapExec05]
+
+    gapArray = []
+    for i in range(20):
+        gapArray.append(Graph())
+
+    menor = 4925
 
     for i in range(len(graphClassArray)):
         for j in range(len(graphClassArray[i].executionCost)):
@@ -110,11 +122,15 @@ def plotGraph(argv):
     fig.update_layout(title="%s"%(title),
                    xaxis_title="Tempo (s)",
                    yaxis_title='GAP (%)')
-    fig.add_trace(go.Scatter(x=gapExec01.executionTime, y=gapExec01.executionCost, mode = 'lines', name = "Seed 01", line=dict(color='blue', width=4)))
-    fig.add_trace(go.Scatter(x=gapExec02.executionTime, y=gapExec02.executionCost, mode = 'lines', name = "Seed 02", line=dict(color='green', width=4)))
-    fig.add_trace(go.Scatter(x=gapExec03.executionTime, y=gapExec03.executionCost, mode = 'lines', name = "Seed 03", line=dict(color='red', width=4)))
-    fig.add_trace(go.Scatter(x=gapExec04.executionTime, y=gapExec04.executionCost, mode = 'lines', name = "Seed 04", line=dict(color='yellow', width=4)))
-    fig.add_trace(go.Scatter(x=gapExec05.executionTime, y=gapExec05.executionCost, mode = 'lines', name = "Seed 05", line=dict(color='purple', width=4)))
+    
+    for i in range(20):
+        fig.add_trace(go.Scatter(x=gapArray[i].executionTime, y=gapArray[i].executionCost, mode = 'lines', name = f"Seed {i + 1}", line=dict(color=px.colors.qualitative.swatches().data[14].marker.color[i], width=4)))
+
+    # fig.add_trace(go.Scatter(x=gapExec01.executionTime, y=gapExec01.executionCost, mode = 'lines', name = "Seed 01", line=dict(color='blue', width=4)))
+    # fig.add_trace(go.Scatter(x=gapExec02.executionTime, y=gapExec02.executionCost, mode = 'lines', name = "Seed 02", line=dict(color='green', width=4)))
+    # fig.add_trace(go.Scatter(x=gapExec03.executionTime, y=gapExec03.executionCost, mode = 'lines', name = "Seed 03", line=dict(color='red', width=4)))
+    # fig.add_trace(go.Scatter(x=gapExec04.executionTime, y=gapExec04.executionCost, mode = 'lines', name = "Seed 04", line=dict(color='yellow', width=4)))
+    # fig.add_trace(go.Scatter(x=gapExec05.executionTime, y=gapExec05.executionCost, mode = 'lines', name = "Seed 05", line=dict(color='purple', width=4)))
 
     fig.update_layout(
         # title="Plot Title",
@@ -128,16 +144,16 @@ def plotGraph(argv):
         )
     )
 
-    fig.write_html("%s/%s.html"%(direct, fileOutput))
+    # fig.write_html("%s/%s.html"%(direct, fileOutput))
     fig.write_html("../../output/newModel/%s.html"%(fileOutput))
 
 
     # Dados para tabela
-    for i in range(5):
-        solucaoMedia += graphClassArray[i].executionCost[len(graphClassArray[i].executionCost) - 1] / 5
+    # for i in range(5):
+    #     solucaoMedia += graphClassArray[i].executionCost[len(graphClassArray[i].executionCost) - 1] / 5
 
-    print("Menor: ", float(menor))
-    print("Media: ", solucaoMedia) 
+    # print("Menor: ", float(menor))
+    # print("Media: ", solucaoMedia) 
 
 
 plotGraph(sys.argv)
