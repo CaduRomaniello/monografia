@@ -120,6 +120,7 @@ function pas(FILE1::String, maxTime::Int64, seed::Int64)
 
     # Calculating initial objectives with all meetings deallocated
     initialObjectives(solution)
+    generateNewObjectiveWeights(solution.objectives)
 
     # Printing info about execution time
     end_reading = Dates.now()
@@ -129,15 +130,17 @@ function pas(FILE1::String, maxTime::Int64, seed::Int64)
     println(Dates.hour(end_reading), ":", Dates.minute(end_reading), ":", Dates.second(end_reading))
     println("----------------------------------------------------------------------------------")
 
-    a = mipFunction(solution.monday.meetings, problem.classrooms, problem.schedules, problem.preferences, problem.reservations)
-    # exit(0)
-    a += mipFunction(solution.thursday.meetings, problem.classrooms, problem.schedules, problem.preferences, problem.reservations)
-    a += mipFunction(solution.wednesday.meetings, problem.classrooms, problem.schedules, problem.preferences, problem.reservations)
-    a += mipFunction(solution.tuesday.meetings, problem.classrooms, problem.schedules, problem.preferences, problem.reservations)
-    a += mipFunction(solution.friday.meetings, problem.classrooms, problem.schedules, problem.preferences, problem.reservations)
-    a += mipFunction(solution.saturday.meetings, problem.classrooms, problem.schedules, problem.preferences, problem.reservations)
-    println(a)
-    exit(0)
+    # a = mipFunction(solution.monday.meetings, problem.classrooms, problem.schedules, problem.preferences, problem.reservations)
+    # # println(a)
+    # # exit(0)
+    # a += mipFunction(solution.thursday.meetings, problem.classrooms, problem.schedules, problem.preferences, problem.reservations)
+    # a += mipFunction(solution.wednesday.meetings, problem.classrooms, problem.schedules, problem.preferences, problem.reservations)
+    # a += mipFunction(solution.tuesday.meetings, problem.classrooms, problem.schedules, problem.preferences, problem.reservations)
+    # a += mipFunction(solution.friday.meetings, problem.classrooms, problem.schedules, problem.preferences, problem.reservations)
+    # a += mipFunction(solution.saturday.meetings, problem.classrooms, problem.schedules, problem.preferences, problem.reservations)
+    # println(a)
+    # verifier(solution, problem)
+    # # exit(0)
 
     # x::Allocate = Allocate()
     # x.allowed = false
@@ -149,6 +152,9 @@ function pas(FILE1::String, maxTime::Int64, seed::Int64)
     # println(doMove(x))
 
     # verifyProfessors(professors, meetings, schedules)
+
+    objectivesMaxValues(problem, solution)
+    exit()
 
     #=================================================================================================
     Functions that test if the movements are working correctly
@@ -190,6 +196,8 @@ function pas(FILE1::String, maxTime::Int64, seed::Int64)
 
     # checks allocations made by the greedy algorithm
     checkAllocation(solution)
+    verifier(solution, problem)
+    # exit(0)
 
     # a = []
     # for i in eachindex(problem.professors)
@@ -291,8 +299,12 @@ function pas(FILE1::String, maxTime::Int64, seed::Int64)
 
     # checks allocations made by the greedy algorithm
     checkAllocation(solution)
+    verifier(solution, problem)
+    # println(solution.objectives)
+    # println(bestSolution.objectives)
+    outputSolutionAnalysis(solution, maxTime, seed, FILE1)
 
-    # exit(0)
+    exit(0)
 
     #=================================================================================================
     Output solution

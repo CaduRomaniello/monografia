@@ -48,8 +48,15 @@ mutable struct Objectives
     preferences::Int64
     professors::Int64
 
-    Objectives(instanceName::String) = new(instanceName, 0, 0, 0, 0, 0, 0)
-    Objectives() = new("", 0, 0, 0, 0, 0, 0)
+    idlenessWeight::Int64
+    deallocatedWeight::Int64
+    lessThan10Weight::Int64
+    moreThan10Weight::Int64
+    preferencesWeight::Int64
+    professorsWeight::Int64
+
+    Objectives(instanceName::String) = new(instanceName, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1)
+    Objectives() = new("", 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1)
 end
 
 mutable struct Solution

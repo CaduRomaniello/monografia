@@ -1,2 +1,0 @@
-(objectives.idleness * 1) + (objectives.deallocated * 10) + (objectives.lessThan10 * 1) + (objectives.moreThan10 * 1) + (objectives.preferences * 1) + (objectives.professors * 1)
-end

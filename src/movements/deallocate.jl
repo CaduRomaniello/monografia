@@ -72,30 +72,28 @@ function doMove(move::Deallocate)
     oldObjectives = Objectives()
     newObjectives = Objectives()
     returnObjectives = deepcopy(move.objectives)
+    auxClassroom = Classroom(0, false, 0, 0, "", 0, "", false)
 
     # calculating the objectives before deallocation
     x = calculateAllocationObjective(move.meeting, move.classroom)
     oldObjectives.idleness += x.idleness
     oldObjectives.deallocated += x.deallocated
     oldObjectives.lessThan10 += x.lessThan10
-    oldObjectives.preferences += x.preferences
+    oldObjectives.moreThan10 += x.moreThan10
     for i in eachindex(move.meeting.professors)
         if length(move.meeting.professors[i].classrooms) > 1
             oldObjectives.professors += length(move.meeting.professors[i].classrooms) - 1
         end
     end
+    x = calculatePreferenceObjective(move.meeting, move.classroom)
+    oldObjectives.preferences += x.preferences
     
     # calculating the objectives after deallocation
     newObjectives.deallocated += move.meeting.demand
-    newObjectives.preferences += length(move.meeting.preferences)
+    y = calculatePreferenceObjective(move.meeting, auxClassroom)
+    newObjectives.preferences += y.preferences
     y = calculateProfessorObjective(move.meeting, move.classroom)
     newObjectives.professors += y.professors
-
-    # calculating preferences objectives if the meeting has preferences
-    if length(move.meeting.preferences) > 0
-        x = calculatePreferenceObjective(move.meeting, move.classroom)
-        oldObjectives.preferences += y.preferences
-    end
 
     # calculating the resulting value of the objectives
     returnObjectives.idleness += (newObjectives.idleness - oldObjectives.idleness)

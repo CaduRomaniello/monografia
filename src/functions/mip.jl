@@ -4,22 +4,22 @@ function custoPreferencia(meeting::SolutionMeeting, classroom::Classroom)
         for i in eachindex(meeting.preferences)
             if (meeting.preferences[i].building !== nothing)
                 if (meeting.preferences[i].building != classroom.buildingID)
-                    x += 1
+                    x += 10
                 end
             end
             if (meeting.preferences[i].floor !== nothing)
                 if (meeting.preferences[i].floor != classroom.floor)
-                    x += 1
+                    x += 10
                 end
             end
             if (meeting.preferences[i].board !== nothing)
                 if (meeting.preferences[i].board != classroom.board)
-                    x += 1
+                    x += 10
                 end
             end
             if (meeting.preferences[i].projector !== nothing)
                 if (meeting.preferences[i].projector != classroom.projector)
-                    x += 1
+                    x += 10
                 end
             end
         end
@@ -27,16 +27,16 @@ function custoPreferencia(meeting::SolutionMeeting, classroom::Classroom)
     else
         for i in eachindex(meeting.preferences)
             if (meeting.preferences[i].building !== nothing)
-                x += 1
+                x += 10
             end
             if (meeting.preferences[i].floor !== nothing)
-                x += 1
+                x += 10
             end
             if (meeting.preferences[i].board !== nothing)
-                x += 1
+                x += 10
             end
             if (meeting.preferences[i].projector !== nothing)
-                x += 1
+                x += 10
             end
         end
         return x
@@ -63,9 +63,9 @@ function calculaCusto(encontros, salas, prefs)
                 percentage = (demand * 10) / 100
                 percentage = round(percentage, RoundDown)
                 if (notAttended <= percentage)
-                    x = notAttended
+                    x = notAttended * 10
                 else
-                    x = ((notAttended - percentage)) + (percentage)
+                    x = ((notAttended - percentage) * 100) + (percentage * 10)
                 end
             end
 
@@ -73,7 +73,7 @@ function calculaCusto(encontros, salas, prefs)
             custo[i, j] = x
             
         end
-        custo[i, length(salas) + 1] = Int(encontros[i].demand)
+        custo[i, length(salas) + 1] = Int(encontros[i].demand) * 100
     end
 
     return custo
@@ -124,6 +124,7 @@ end
 function mipFunction(encontros, salas, horarios, prefs, reservas)
     
     py"""
+    import numpy
     from mip import *
     def mipPy(encontros, salas, horarios, calculaCusto, restricao_horario, prefs, horarios_agrupados, reservas, reservado):
         
@@ -155,10 +156,20 @@ function mipFunction(encontros, salas, horarios, prefs, reservas)
                 ehs[e].append([])
                 for h in range(H):
                     estaReservado = reservado(reservas, s + 1, h + 1, encontros[0].dayOfWeek)
-                    if ((h + 1 in codigos_horarios[e]) and (not estaReservado)):
+                    if ((h + 1 in codigos_horarios[e]) and not estaReservado):
                         ehs[e][s].append(m.add_var(var_type=BINARY, name=f"x({e},{s},{h})"))
                     else:
                         ehs[e][s].append(0)
+
+
+        # for e in range(E):
+        #     c = 0
+        #     codHorario = encontros[e].schedules[0].ID
+        #     for s in range(S):
+        #         if type(ehs[e][s][codHorario]) != int:
+        #             c += 1
+        #     print(c, end=', ')
+        # print()
 
         # for e in range(E):
         #     for h in encontros[e].horarios:
@@ -168,6 +179,9 @@ function mipFunction(encontros, salas, horarios, prefs, reservas)
         #             ehs[e][encontros[e].cod_sala - 1][h - 1].lb = 1.0
 
         custo = calculaCusto(encontros, salas, prefs)
+        # for e in range(E):
+        #     print(encontros[e].ID, end=' - ')
+        #     print(custo[e])
         # ehs = [[[m.add_var(var_type=BINARY) for h in range(H)] for s in range(S)] for e in range(E)]
 
         cod_horarios = []
@@ -177,7 +191,8 @@ function mipFunction(encontros, salas, horarios, prefs, reservas)
                aux.append(encontros[e].schedules[x].ID) 
             cod_horarios.append(aux)
 
-        m.objective = xsum(custo[e][s] * ehs[e][s][h - 1]  for e in range(E) for s in range(S) for h in cod_horarios[e])
+        # m.objective = xsum(custo[e][s] * ehs[e][s][h - 1]  for e in range(E) for s in range(S) for h in cod_horarios[e])
+        m.objective = xsum(custo[e][s] * ehs[e][s][cod_horarios[e][0] - 1]  for e in range(E) for s in range(S))
             
         for e in range(E):
             for h in cod_horarios[e]:
@@ -202,6 +217,9 @@ function mipFunction(encontros, salas, horarios, prefs, reservas)
 
         m.optimize()  
         m.write("mip_lb.lp")
+        return m.objective_value
+        # print("VALOR:")
+        # print(m.objective_value)
 
         retorno = []
 
@@ -211,8 +229,29 @@ function mipFunction(encontros, salas, horarios, prefs, reservas)
         #         if (ehs[e][s][encontros[e].horarios[0] - 1].x > 0.5):
         #             aux[1] = s + 1
         #     retorno.append(aux)
+
+        aloc = []
+
+        print(numpy.shape(ehs))
+        print(E)
+        for i in range(E):
+            codHorario = encontros[i].schedules[0].ID - 1
+            aux = [encontros[i].ID, 0]
+            for j in range(S - 1):
+                # print(ehs[e][j][codHorario])
+                if type(ehs[e][j][codHorario]) != int and ehs[e][j][codHorario].x > 0.5:
+                    print(ehs[e][j][codHorario].x)
+                    aux[1] = j + 1
+                    print(aux)
+                    break
+                    # if j == S - 1:
+                    #     aloc.append((encontros[i].ID, 0))
+                    # else:
+                    #     aloc.append((encontros[i].ID, j))
+            aloc.append(aux)
             
-        return m.objective_value
+        # print(aloc)
+        return aloc
     """
     
     horarios_agrupados = []
@@ -226,5 +265,7 @@ function mipFunction(encontros, salas, horarios, prefs, reservas)
         push!(horarios_agrupados, aux)
     end
 
+    # x = py"mipPy"(encontros, salas, horarios, calculaCusto, restricao_horario, prefs, horarios_agrupados, reservas, reservado)
+    # return x
     return py"mipPy"(encontros, salas, horarios, calculaCusto, restricao_horario, prefs, horarios_agrupados, reservas, reservado)
 end

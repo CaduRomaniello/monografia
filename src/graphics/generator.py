@@ -4,6 +4,7 @@ import sys
 import os
 import json
 import plotly.express as px
+import math
 
 direct = "%s"%(os.getcwd())
 fig = go.Figure()
@@ -47,6 +48,28 @@ def readFile(graphClass, fileName):
     finally:
         graphFile.close()
 
+def professorMedia():
+    x = 0
+    for i in range(20):
+        total = 0
+        f = open(f"../../output/newModel/diffWeights/solution_seed-{i+1}_maxTime-900.json")
+        data = json.load(f)
+        total += data['objectives']['idleness']
+        total += data['objectives']['deallocated']
+        total += data['objectives']['lessThan10']
+        total += data['objectives']['moreThan10']
+        total += data['objectives']['preferences']
+        total += data['objectives']['professors']
+
+        x += (data['objectives']['professors'] / total) * 100
+        # for i in data['objectives']:
+        #     # print(i)
+        #     graphClass.pushTime(float(i['time']))
+        #     graphClass.pushCost(int(i['cost']))
+
+        f.close()
+    print(f"Media dos professores: {x / 20}")
+
 # Plotting Graph 
 def plotGraph(argv):
 
@@ -71,8 +94,10 @@ def plotGraph(argv):
         graphClassArray.append(Graph())
     solucaoMedia = 0
 
+    professorMedia()
+
     for i in range(20):
-        readFile(graphClassArray[i], f"../../output/newModel/original/costGraphic_seed-{i+1}_maxTime-900.json")
+        readFile(graphClassArray[i], f"../../output/newModel/diffWeights/costGraphic_seed-{i+1}_maxTime-900.json")
 
     # readFile(graphClassArray[0], "../../output/newModel/1-10-100-1000/costGraphic_seed-1_maxTime-900.json")
     # readFile(graphClassArray[1], "../../output/newModel/1-10-100-1000/costGraphic_seed-2_maxTime-900.json")
@@ -81,8 +106,8 @@ def plotGraph(argv):
     # readFile(graphClassArray[4], "../../output/newModel/1-10-100-1000/costGraphic_seed-5_maxTime-900.json")
     # exit(0)
     
-    title = "GAP all 1 -> 900s"
-    fileOutput = "GAP_all-1_900s"
+    title = "GAP 1-10-100 -> 900s"
+    fileOutput = "GAP_1-10-100_900s"
 
     # Calculando GAP
     # menor = graphClassExec01.executionCost[len(graphClassExec01.executionCost) - 1]
@@ -104,7 +129,10 @@ def plotGraph(argv):
     for i in range(20):
         gapArray.append(Graph())
 
-    menor = 4925
+    menor = 49855
+    soma = 0
+    menor2 = 1000000000
+    maior = 0
 
     for i in range(len(graphClassArray)):
         for j in range(len(graphClassArray[i].executionCost)):
@@ -118,6 +146,11 @@ def plotGraph(argv):
 
             gapArray[i].pushCost(gap)
 
+        soma += graphClassArray[i].executionCost[len(graphClassArray[i].executionCost) - 1]
+        if graphClassArray[i].executionCost[len(graphClassArray[i].executionCost) - 1] < menor2:
+            menor2 = graphClassArray[i].executionCost[len(graphClassArray[i].executionCost) - 1]
+        if graphClassArray[i].executionCost[len(graphClassArray[i].executionCost) - 1] > maior:
+            maior = graphClassArray[i].executionCost[len(graphClassArray[i].executionCost) - 1]
     # Edit the layout
     fig.update_layout(title="%s"%(title),
                    xaxis_title="Tempo (s)",
@@ -144,16 +177,27 @@ def plotGraph(argv):
         )
     )
 
-    # fig.write_html("%s/%s.html"%(direct, fileOutput))
-    fig.write_html("../../output/newModel/%s.html"%(fileOutput))
+    fig.write_html("%s/%s.html"%(direct, fileOutput))
+    # fig.write_html("../../output/newModel/%s.html"%(fileOutput))
 
 
     # Dados para tabela
     # for i in range(5):
     #     solucaoMedia += graphClassArray[i].executionCost[len(graphClassArray[i].executionCost) - 1] / 5
 
-    # print("Menor: ", float(menor))
-    # print("Media: ", solucaoMedia) 
+    print("Menor: ", float(menor))
+    media = soma/len(graphClassArray)
+    print("Media: ", media) 
+    print("Menor 2: ", menor2) 
+    print("Maior: ", maior) 
+
+    desvio = 0
+    for i in range(len(graphClassArray)):
+        pos = len(graphClassArray[i].executionCost) - 1
+        desvio += ((graphClassArray[i].executionCost[pos] - media)) ** 2
+    desvio /= len(graphClassArray)
+    desvio = math.sqrt(desvio)
+    print("Desvio: ", desvio) 
 
 
 plotGraph(sys.argv)

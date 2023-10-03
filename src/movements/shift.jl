@@ -96,6 +96,7 @@ function doMove(move::Shift)
     oldObjectives.idleness += x.idleness
     oldObjectives.deallocated += x.deallocated
     oldObjectives.lessThan10 += x.lessThan10
+    oldObjectives.moreThan10 += x.moreThan10
     oldObjectives.preferences += x.preferences
     for i in eachindex(move.meeting.professors)
         if length(move.meeting.professors[i].classrooms) > 1
@@ -108,6 +109,7 @@ function doMove(move::Shift)
     newObjectives.idleness += y.idleness
     newObjectives.deallocated += y.deallocated
     newObjectives.lessThan10 += y.lessThan10
+    newObjectives.moreThan10 += y.moreThan10
     newObjectives.preferences += y.preferences
     y = calculateProfessorObjective(move.meeting, move.classroom_destination)
     newObjectives.professors += y.professors

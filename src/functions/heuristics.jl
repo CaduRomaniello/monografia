@@ -388,23 +388,23 @@ function LAHC(solution::Solution, problem::Problem, listSize::Int64, maxTime::In
         #     end
         # end
         # println(total, " - ", solution.objectives.professors)
-        if total != solution.objectives.professors
-            println("ERRO")
-            # println(chosenMovement)
+        # if total != solution.objectives.professors
+        #     println("ERRO")
+        #     # println(chosenMovement)
 
-            # println(swap.meeting_1)
-            # println()
-            # println(swap.meeting_2)
-            # println()
+        #     # println(swap.meeting_1)
+        #     # println()
+        #     # println(swap.meeting_2)
+        #     # println()
 
-            # println(swap.meeting_1)
-            # println(swap.meeting_2)
-            # println(swap.classroom_1)
-            # println(swap.classroom_2)
-            # println("----------------------------------------------------------")
-            println("----------------------------------------------------------")
-            exit(0)
-        end
+        #     # println(swap.meeting_1)
+        #     # println(swap.meeting_2)
+        #     # println(swap.classroom_1)
+        #     # println(swap.classroom_2)
+        #     # println("----------------------------------------------------------")
+        #     println("----------------------------------------------------------")
+        #     exit(0)
+        # end
 
     end
 

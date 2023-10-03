@@ -88,6 +88,7 @@ function createSolutionMeetings(problem::Problem)
         for j in eachindex(problem.meetings[i].schedules)
             push!(x[i].schedules, problem.schedules[problem.meetings[i].schedules[j]])
         end
+        sort!(x[i].schedules, alg = MergeSort, by = x -> x.ID)
 
         # Finding all professors and its preferences and restrictions
         for j in eachindex(problem.meetings[i].professors)
@@ -149,8 +150,20 @@ Calculating initial objectives values with all meetings deallocated
 function initialObjectives(solution::Solution)
     for i in eachindex(solution.meetings)
         solution.objectives.deallocated += solution.meetings[i].demand
-        if length(solution.meetings[i].preferences) > 0
-            solution.objectives.preferences += length(solution.meetings[i].preferences)
+
+        for j in eachindex(solution.meetings[i].preferences)
+            if (solution.meetings[i].preferences[j].building !== nothing)
+                solution.objectives.preferences += 1
+            end
+            if (solution.meetings[i].preferences[j].floor !== nothing)
+                solution.objectives.preferences += 1
+            end
+            if (solution.meetings[i].preferences[j].board !== nothing)
+                solution.objectives.preferences += 1
+            end
+            if (solution.meetings[i].preferences[j].projector !== nothing)
+                solution.objectives.preferences += 1
+            end
         end
     end
 end
@@ -236,37 +249,21 @@ function calculatePreferenceObjective(meeting::SolutionMeeting, classroom::Class
             if (meeting.preferences[i].building !== nothing)
                 if (meeting.preferences[i].building != classroom.buildingID)
                     x.preferences += 1
-                else
-                    if x.preferences > 0
-                        x.preferences -= 1
-                    end
                 end
             end
             if (meeting.preferences[i].floor !== nothing)
                 if (meeting.preferences[i].floor != classroom.floor)
                     x.preferences += 1
-                else
-                    if x.preferences > 0
-                        x.preferences -= 1
-                    end
                 end
             end
             if (meeting.preferences[i].board !== nothing)
                 if (meeting.preferences[i].board != classroom.board)
                     x.preferences += 1
-                else
-                    if x.preferences > 0
-                        x.preferences -= 1
-                    end
                 end
             end
             if (meeting.preferences[i].projector !== nothing)
                 if (meeting.preferences[i].projector != classroom.projector)
                     x.preferences += 1
-                else
-                    if x.preferences > 0
-                        x.preferences -= 1
-                    end
                 end
             end
         end
@@ -798,7 +795,7 @@ end
 Calculate solution value
 """
 function calculateSolutionValue(objectives::Objectives)
-    return (objectives.idleness * 1) + (objectives.deallocated * 1) + (objectives.lessThan10 * 1) + (objectives.moreThan10 * 1) + (objectives.preferences * 1) + (objectives.professors * 1)
+    return ((objectives.idleness * 1) * objectives.idlenessWeight) + ((objectives.deallocated * 1) * objectives.deallocatedWeight) + ((objectives.lessThan10 * 1) * objectives.lessThan10Weight) + ((objectives.moreThan10 * 1) * objectives.moreThan10Weight) + ((objectives.preferences * 1) * objectives.preferencesWeight) + ((objectives.professors * 1) * objectives.professorsWeight)
 end
 
 """
@@ -964,4 +961,132 @@ function verifyProfessors(professors, meetings, schedules)
     end
     println(count)
     println(length(meetings))
+end
+
+"""
+Calculate max objectives values
+"""
+function objectivesMaxValues(problem::Problem, solution::Solution)
+
+    maxIdleness = 0
+    maxDeallocated = 0
+    maxLess = 0
+    maxMore = 0
+    maxPref = 0
+    maxProf = 0
+
+    copyClassroomsRev = sort(problem.classrooms, rev = true, alg = MergeSort, by = x -> x.capacity)
+    copyClassrooms = sort(problem.classrooms, rev = false, alg = MergeSort, by = x -> x.capacity)
+    lessCapacity = copyClassrooms[1].capacity
+    maxCapacity = copyClassroomsRev[1].capacity
+
+    for i in eachindex(problem.meetings)
+        maxDeallocated += problem.meetings[i].demand
+
+        demand = problem.meetings[i].demand
+
+        if demand <= maxCapacity
+            if (maxCapacity - demand) > round(maxCapacity / 2, RoundDown)
+                maxIdleness += (maxCapacity - demand) - round(maxCapacity / 2, RoundDown)
+            end
+        end
+
+        if demand > lessCapacity
+            notAttended = demand - lessCapacity
+            percentage = (demand * 10) / 100
+            percentage = round(percentage, RoundDown)
+            if (notAttended <= percentage)
+                maxLess += notAttended
+            else
+                maxLess += percentage
+                maxMore += notAttended - percentage
+            end
+        end
+
+    end
+
+    x = Dict()
+
+    for i in eachindex(problem.professors)
+        x[problem.professors[i].code] = 0
+    end
+
+    for i in eachindex(problem.meetings)
+        for j in eachindex(problem.meetings[i].professors)
+            x[problem.meetings[i].professors[j]] += 1
+        end
+    end
+
+    for (i, j) in x
+        if j >= 1
+            maxProf += j - 1
+        end
+    end
+
+    for i in eachindex(solution.meetings)
+        for j in eachindex(solution.meetings[i].preferences)
+            if (solution.meetings[i].preferences[j].building !== nothing)
+                maxPref += 1
+            end
+            if (solution.meetings[i].preferences[j].floor !== nothing)
+                maxPref += 1
+            end
+            if (solution.meetings[i].preferences[j].board !== nothing)
+                maxPref += 1
+            end
+            if (solution.meetings[i].preferences[j].projector !== nothing)
+                maxPref += 1
+            end
+        end
+    end
+    
+    println("maxIdleness   : $(maxIdleness)")
+    println("maxDeallocated: $(maxDeallocated)")
+    println("maxLess       : $(maxLess)")
+    println("maxMore       : $(maxMore)")
+    println("maxPref       : $(maxPref)")
+    println("maxProf       : $(maxProf)")
+
+end
+
+"""
+New Objectives weights
+"""
+function generateNewObjectiveWeights(obj::Objectives)
+    obj.deallocatedWeight = rand(1:10)
+    obj.idlenessWeight    = rand(1:10)
+    obj.lessThan10Weight  = rand(1:10)
+    obj.moreThan10Weight  = rand(1:10)
+    obj.preferencesWeight = rand(1:10)
+    obj.professorsWeight  = rand(1:10)
+end
+
+"""
+Create output files for analysis
+"""
+function outputSolutionAnalysis(solution::Solution, maxTime::Int64, seed::Int64, instanceName::String)
+
+    directoryName = split(instanceName, ".")[1]
+    try
+        mkdir("../output/analysis/$(directoryName)")
+    catch
+    end
+
+    output = open("../output/analysis/$(directoryName)/solution_seed-$(seed)_maxTime-$(maxTime).json", "w")
+    final_dict = OrderedDict("objectives" => solution.objectives, "Cost" => calculateSolutionValue(solution.objectives), "meetings" => solution.meetings)
+    data = JSON.json(final_dict)
+    write(output, data)
+    close(output)
+
+    # output = open("../output/$(directoryName)/costGraphic_seed-$(seed)_maxTime-$(maxTime).json", "w")
+    # final_dict = OrderedDict("points" => costGraphic)
+    # data = JSON.json(final_dict)
+    # write(output, data)
+    # close(output)
+
+    # output = open("../output/$(directoryName)/objectivesGraphic_seed-$(seed)_maxTime-$(maxTime).json", "w")
+    # final_dict = OrderedDict("idleness" => objectivesGraphic.idleness, "deallocated" => objectivesGraphic.deallocated, "lessThan10" => objectivesGraphic.lessThan10, "moreThan10" => objectivesGraphic.moreThan10,"preferences" => objectivesGraphic.preferences)
+    # data = JSON.json(final_dict)
+    # write(output, data)
+    # close(output)
 end
