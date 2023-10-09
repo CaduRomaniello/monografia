@@ -9,3 +9,7 @@ class Classroom():
         self.board = board
         self.projector = projector
         self.days = days
+
+    def allocate_reservation(self, schedule, day_name):
+        self.days[day_name][schedule - 1]['occupied'] = True
+        self.days[day_name][schedule - 1]['is_reservation'] = True

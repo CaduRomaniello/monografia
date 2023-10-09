@@ -94,8 +94,12 @@ def parse_meetings(meetings):
         raise Exception("No meetings in data file")
     
     parsed_meetings = []
+    meeting_count = 0
     for meeting in meetings:
         parsed_meetings.append(InstanceMeeting(meeting['isPractical'], meeting['dayOfWeek'], meeting['vacancies'], meeting['demand'], meeting['subjectCode'], meeting['classes'], meeting['schedules'], meeting['professors']))
+        parsed_meetings[meeting_count].schedules.sort()
+        parsed_meetings[meeting_count].classes.sort()
+        meeting_count += 1
 
     return parsed_meetings
 
