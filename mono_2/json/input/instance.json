@@ -17852,7 +17852,7 @@
             "projector": true
         },
         {
-            "category": "turma",
+            "category": "class",
             "categoryCode": "MED011-11",
             "building": null,
             "floor": 0,
@@ -17870,7 +17870,7 @@
             "projector": null
         },
         {
-            "category": "turma",
+            "category": "class",
             "categoryCode": "FIS835-11",
             "building": 1,
             "floor": null,
