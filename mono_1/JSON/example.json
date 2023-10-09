@@ -1,0 +1,31 @@
+{
+    "schedules": [
+        {"ID": 1, "startTime": "07:30", "endTime": "08:20"}
+    ],
+    "buildings": [
+        {"ID": 1, "name": "Predio-1"}
+    ],
+    "classrooms": [
+        {"ID": 1, "isLab": false, "capacity": 70, "buildingID": 1, "description": "Predio-1-SL001", "floor": 0, "board": "N", "projector": true}
+    ],
+    "professors": [
+        {"code": "1.111.111", "name": "Nome"}
+    ],
+    "subjects": [
+        {"code": "XXX111", "name": "Disciplina 1"}
+    ],
+    "meetings": [
+        {"isPractical": false, "dayOfWeek": 3, "vacancies": 50, "demand": 50, "subjectCode": "BEV118", "classes": ["11"], "schedules": [3, 2], "professors": ["2.027.719"]}
+    ],
+    "preferences": [
+        {"category": "professor", "categoryCode": "1.111.111", "building": null, "floor": null, "board": "B", "projector": false},
+        {"category": "turma", "categoryCode": "XXX111-11", "building": null, "floor": 0, "board": "B", "projector": false}
+    ],
+    "restrictions": [
+        {"category": "professor", "categoryCode": "1.111.111", "building": null, "floor": null, "board": "W", "projector": null},
+        {"category": "turma", "categoryCode": "XXX111-11", "building": 1, "floor": null, "board": null, "projector": null}
+    ],
+    "reservations": [
+        {"classroomID": 2, "dayOfWeek": 3, "scheduleID": 4}
+    ]
+}
