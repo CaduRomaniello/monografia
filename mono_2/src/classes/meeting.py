@@ -1,5 +1,5 @@
 class Meeting():
-    def __init__(self, is_practical=None, day_of_week=None, vacancies=None, demand=None, subject_code=None, classes=None, schedules=None, id=None, professors=None, classroom=None, preferences=None, relatives_id=None):
+    def __init__(self, is_practical=None, day_of_week=None, vacancies=None, demand=None, subject_code=None, classes=None, schedules=None, id=None, professors=None, classroom_id=None, preferences=None, relatives_id=None):
         self.is_practical = is_practical
         self.day_of_week = day_of_week
         self.vacancies = vacancies
@@ -9,11 +9,12 @@ class Meeting():
         self.schedules = schedules
         self.id = id
         self.professors = professors
-        self.classroom = classroom
+        self.classroom_id = classroom_id
         self.preferences = preferences
         self.relatives_id = relatives_id
 
     def print(self):
+        print('\n====================== Meeting ======================')
         print('Id          : ', self.id)
         print('Self        : ', self)
         print('Is practical: ', self.is_practical)
@@ -23,7 +24,9 @@ class Meeting():
         print('Subject code: ', self.subject_code)
         print('Classes     : ', self.classes)
         print('schedules   : ', self.schedules)
+        print('Classroom id: ', self.classroom_id)
         print('Relatives id: ', self.relatives_id)
+        print('=======================================================')
 
     def day_name(self):
         if self.day_of_week == 2:

@@ -1,6 +1,12 @@
 class Objectives():
-    def __init__(self):
-        self.idleness = 0
-        self.deallocated = 0
-        self.preferences = 0
-        self.standing = 0
+    def __init__(self, idleness=0, deallocated=0, standing=0):
+        self.idleness = idleness
+        self.deallocated = deallocated
+        self.standing = standing
+
+    def print(self):
+        print('\n====================== Objectives ======================')
+        print('Idleness   : ', self.idleness)
+        print('Deallocated: ', self.deallocated)
+        print('Standing   : ', self.standing)
+        print('========================================================')

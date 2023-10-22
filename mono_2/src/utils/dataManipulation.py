@@ -1,5 +1,6 @@
 import copy
 import random
+from tqdm import tqdm
 
 from classes.classroom import Classroom
 from classes.meeting import Meeting
@@ -7,9 +8,11 @@ from classes.professor import Professor
 
 
 def create_variable_classrooms(instance):
+    print("\n[INFO] Creating variable classrooms")
+
     classrooms = []
 
-    for classroom in instance['classrooms']:
+    for classroom in tqdm(instance['classrooms']):
         monday = []
         thursday = []
         wednesday = []
@@ -63,9 +66,11 @@ def create_variable_classrooms(instance):
     return classrooms
 
 def create_variable_professors(instance):
+    print("\n[INFO] Creating variable professors")
+
     professors = []
 
-    for professor in instance['professors']:
+    for professor in tqdm(instance['professors']):
         monday = []
         thursday = []
         wednesday = []
@@ -113,9 +118,11 @@ def create_variable_professors(instance):
     return professors
 
 def create_variable_meetings(instance, objectives):
+    print("\n[INFO] Creating variable meetings")
+
     meetings = []
 
-    for i in range(len(instance['meetings'])):
+    for i in tqdm(range(len(instance['meetings']))):
         objectives.deallocated += instance['meetings'][i].demand
 
         meetings.append(Meeting(instance['meetings'][i].is_practical, instance['meetings'][i].day_of_week, instance['meetings'][i].vacancies, instance['meetings'][i].demand, instance['meetings'][i].subject_code, instance['meetings'][i].classes, instance['meetings'][i].schedules, i + 1, [], None, [], None))
@@ -123,6 +130,8 @@ def create_variable_meetings(instance, objectives):
     return meetings
         
 def find_relatives_meetings(meetings):
+    print("[INFO] Finding relatives meetings")
+
     relatives = []
     relatives_count = 1
 
@@ -169,7 +178,9 @@ def find_relatives_meetings(meetings):
     return relatives
 
 def allocate_professors(meetings, professors):
-    for meeting in meetings:
+    print("\n[INFO] Finding a professor for every meeting (this function must be changed if instance is correct)")
+
+    for meeting in tqdm(meetings):
         schedules = meeting.schedules
         meeting_id = meeting.id
         day_name = meeting.day_name()
@@ -192,11 +203,15 @@ def allocate_professors(meetings, professors):
             raise Exception(f"Could not find a professor for meeting with id {meeting.id}")
 
 def allocate_reservations(classrooms, reservations):
-    for r in reservations:
+    print("\n[INFO] Allocating reservations")
+
+    for r in tqdm(reservations):
         classrooms[r.classroom_id - 1].allocate_reservation(r.schedule_id, r.day_name())
 
 def find_preferences(meetings, preferences):
-    for p in preferences:
+    print("\n[INFO] Adding preferences to meetings")
+
+    for p in tqdm(preferences):
         code = p.category_code
         category = p.category
 

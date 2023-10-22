@@ -13,6 +13,8 @@ from classes.instanceSchedule import InstanceSchedule
 from classes.instanceSubject import InstanceSubject
 
 def read_instance(filename):
+    print(f"[INFO] Reading instance file '{filename}'")
+
     actual_path = os.path.dirname(__file__)
     instance_path = os.path.join(actual_path, f"..\..\json\input\{filename}")
 
@@ -22,6 +24,8 @@ def read_instance(filename):
     return data
 
 def parse_data(data):
+    print("[INFO] Parsing instance data")
+
     instance = {}
 
     instance["schedules"] = parse_schedules(data.get("schedules"))
@@ -37,6 +41,8 @@ def parse_data(data):
     return instance
 
 def parse_schedules(schedules):
+    print("[INFO] Parsing schedules")
+
     if not schedules:
         raise Exception("No schedules in data file")
     
@@ -50,6 +56,8 @@ def parse_schedules(schedules):
     return parsed_schedules
 
 def parse_buildings(buildings):
+    print("[INFO] Parsing buildings")
+
     if not buildings:
         raise Exception("No buildings in data file")
     
@@ -60,6 +68,8 @@ def parse_buildings(buildings):
     return parsed_buildings
 
 def parse_classrooms(classrooms):
+    print("[INFO] Parsing classrooms")
+
     if not classrooms:
         raise Exception("No classrooms in data file")
     
@@ -70,6 +80,8 @@ def parse_classrooms(classrooms):
     return parsed_classrooms
 
 def parse_professors(professors):
+    print("[INFO] Parsing professors")
+
     if not professors:
         raise Exception("No professors in data file")
     
@@ -80,6 +92,8 @@ def parse_professors(professors):
     return parsed_professors
 
 def parse_subjects(subjects):
+    print("[INFO] Parsing subjects")
+
     if not subjects:
         raise Exception("No subjects in data file")
     
@@ -90,6 +104,8 @@ def parse_subjects(subjects):
     return parsed_subjects
 
 def parse_meetings(meetings):
+    print("[INFO] Parsing meetings")
+
     if not meetings:
         raise Exception("No meetings in data file")
     
@@ -104,6 +120,8 @@ def parse_meetings(meetings):
     return parsed_meetings
 
 def parse_preferences(preferences):
+    print("[INFO] Parsing preferences")
+
     if not preferences:
         raise Exception("No preferences in data file")
     
@@ -114,6 +132,8 @@ def parse_preferences(preferences):
     return parsed_preferences
 
 def parse_restrictions(restrictions):
+    print("[INFO] Parsing restrictions")
+
     if not restrictions:
         raise Exception("No restrictions in data file")
     
@@ -124,6 +144,8 @@ def parse_restrictions(restrictions):
     return parsed_restrictions
 
 def parse_reservations(reservations):
+    print("[INFO] Parsing reservations")
+
     if not reservations:
         raise Exception("No reservationsin data file")
     
