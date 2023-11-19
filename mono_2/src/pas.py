@@ -3,6 +3,8 @@ import os
 import copy
 
 from classes.objectives import Objectives
+from heuristics.lahc_mono import lahc_mono
+from heuristics.mip import mipPy
 from heuristics.nsgaII import nsgaII
 from movements.allocate import allocate
 from movements.deallocate import deallocate
@@ -44,6 +46,9 @@ def pas(filename):
     }
     verifier(original_solution)
 
+    print(mipPy(original_solution, instance))
+    exit()
+
     # ID == 23
     # for m in meetings:
     #     if m.schedules == original_meetings[0].schedules and m.id != original_meetings[0].id and m.day_of_week == original_meetings[0].day_of_week:
@@ -78,6 +83,11 @@ def pas(filename):
     # original_objectives.print()
 
     # exit()
+
+    best_solution = lahc_mono(original_solution, 300, 100)
+    verifier(best_solution)
+    print("[INFO] Verifier passed after LAHC-mono")
+    exit()
 
     # Ceating first population
     population = generate_first_population(original_solution)
