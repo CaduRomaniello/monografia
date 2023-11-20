@@ -2,7 +2,10 @@ from classes.objectives import Objectives
 
 DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']
 
-def verifier(solution):
+def verifier(solution, verbose=True):
+    if verbose:
+        print("[INFO] Verifying solution")
+
     verifier_objectives = Objectives()
 
     for meeting in solution["meetings"]:
@@ -18,7 +21,7 @@ def verifier(solution):
                     raise Exception(f"Meeting with id '{meeting.id}' is supposed to be allocated in classroom '{classroom.id}' but it is not.")
             demand = meeting.demand
             capacity = classroom.capacity
-            verifier_objectives.idleness += capacity - demand if capacity - demand > 0 else 0
+            verifier_objectives.idleness += (capacity - demand if capacity - demand > 0 else 0) if capacity - demand > capacity / 2 else 0
             verifier_objectives.standing += demand - capacity if demand - capacity > 0 else 0
         else:
             verifier_objectives.deallocated += meeting.demand
@@ -33,6 +36,9 @@ def verifier(solution):
     
     if verifier_objectives.deallocated != solution["objectives"].deallocated:
         raise Exception(f"Deallocated objective is not correct. Expected: {verifier_objectives.deallocated}, Actual: {solution['objectives'].deallocated}")
+    
+    if verbose:
+        print("[INFO] Solution is correct")
     
 def verify_by_classroom(solution):
     for classroom in solution["classrooms"]:

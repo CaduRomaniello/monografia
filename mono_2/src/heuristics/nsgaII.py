@@ -164,7 +164,7 @@ def mutation_swap_or_replace(solution):
         meeting_index_2 = random.randrange(0, len(solution['meetings']))
 
         for j in range(len(solution['meetings'])):
-            if (meeting_index_1 == meeting_index_2) or (solution['meetings'][meeting_index_1].schedules != solution['meetings'][meeting_index_2].schedules):
+            if (meeting_index_1 == meeting_index_2) or (solution['meetings'][meeting_index_1].schedules != solution['meetings'][meeting_index_2].schedules) or (solution['meetings'][meeting_index_1].day_of_week != solution['meetings'][meeting_index_2].day_of_week):
                 if meeting_index_2 == len(solution['meetings']) - 1:
                     meeting_index_2 = 0
                 else:

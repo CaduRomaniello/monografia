@@ -1,6 +1,9 @@
 import json
 import os
 import copy
+import random
+from classes.classroom import Classroom
+from classes.meeting import Meeting
 
 from classes.objectives import Objectives
 from heuristics.lahc_mono import lahc_mono
@@ -11,12 +14,19 @@ from movements.deallocate import deallocate
 from movements.shift import shift
 from movements.swap import swap
 from utils.dataManipulation import allocate_professors, allocate_reservations, create_variable_classrooms, create_variable_meetings, create_variable_professors, find_preferences, find_relatives_meetings
-from utils.graphics import generate_graphic
+from utils.files import write_solution
+from utils.graphics import generate_graphic, generate_graphic_lahc_mono
 from utils.instance import parse_data, read_instance
 from utils.population import generate_first_population
 from utils.verifier import verifier
 
-def pas(filename):
+def serialize(obj):
+    if isinstance(obj, (Meeting, Classroom, Objectives)):
+        return obj.toJSON()
+
+def pas(filename, seed, max_time):
+    random.seed(int(seed))
+
     objectives = Objectives()
 
     # Reading instance data
@@ -46,8 +56,79 @@ def pas(filename):
     }
     verifier(original_solution)
 
-    print(mipPy(original_solution, instance))
+    print('14229.0')
+    monday = []
+    tuesday = []
+    wednesday = []
+    thursday = []
+    friday = []
+    saturday = []
+    for meeting in original_meetings:
+        if meeting.day_name() == 'monday':
+            monday.append(meeting)
+        elif meeting.day_name() == 'tuesday':
+            tuesday.append(meeting)
+        elif meeting.day_name() == 'wednesday':
+            wednesday.append(meeting)
+        elif meeting.day_name() == 'thursday':
+            thursday.append(meeting)
+        elif meeting.day_name() == 'friday':
+            friday.append(meeting)
+        elif meeting.day_name() == 'saturday':
+            saturday.append(meeting)
+        else:
+            raise Exception('Invalid day of week')
+
+    monday_cost, monday_allocations = mipPy({'meetings': monday, "classrooms": original_classrooms, "objectives": original_objectives}, instance)
+    for i in monday_allocations:
+        if i['classroom_id'] != 0:
+            allocate(original_solution, i['meeting_id'], i['classroom_id'])
+
+    tuesday_cost, tuesday_allocations = mipPy({'meetings': tuesday, "classrooms": original_classrooms, "objectives": original_objectives}, instance)
+    for i in tuesday_allocations:
+        if i['classroom_id'] != 0:
+            allocate(original_solution, i['meeting_id'], i['classroom_id'])
+
+    wednesday_cost, wednesday_allocations = mipPy({'meetings': wednesday, "classrooms": original_classrooms, "objectives": original_objectives}, instance)
+    for i in wednesday_allocations:
+        if i['classroom_id'] != 0:
+            allocate(original_solution, i['meeting_id'], i['classroom_id'])
+
+    thursday_cost, thursday_allocations = mipPy({'meetings': thursday, "classrooms": original_classrooms, "objectives": original_objectives}, instance)
+    for i in thursday_allocations:
+        if i['classroom_id'] != 0:
+            allocate(original_solution, i['meeting_id'], i['classroom_id'])
+
+    friday_cost, friday_allocations = mipPy({'meetings': friday, "classrooms": original_classrooms, "objectives": original_objectives}, instance)
+    for i in friday_allocations:
+        if i['classroom_id'] != 0:
+            allocate(original_solution, i['meeting_id'], i['classroom_id'])
+
+    saturday_cost, saturday_allocations = mipPy({'meetings': saturday, "classrooms": original_classrooms, "objectives": original_objectives}, instance)
+    for i in saturday_allocations:
+        if i['classroom_id'] != 0:
+            allocate(original_solution, i['meeting_id'], i['classroom_id'])
+
+    verifier(original_solution)
+    original_solution['objectives'].print()
+
     exit()
+
+    total_cost = monday_cost + tuesday_cost + wednesday_cost + thursday_cost + friday_cost + saturday_cost
+    print(f'[INFO] Total cost: {total_cost}')
+    exit()
+
+    # best_solution_value, best_allocations = mipPy(original_solution, instance)
+    # print(best_solution_value)
+
+    # for i in best_allocations:
+    #     if i['classroom_id'] != 0:
+    #         allocate(original_solution, i['meeting_id'], i['classroom_id'])
+
+    # verifier(original_solution)
+    # original_solution['objectives'].print()
+
+    # exit()
 
     # ID == 23
     # for m in meetings:
@@ -84,9 +165,13 @@ def pas(filename):
 
     # exit()
 
-    best_solution = lahc_mono(original_solution, 300, 100)
+    best_solution, graphics = lahc_mono(original_solution, 300, int(max_time))
     verifier(best_solution)
     print("[INFO] Verifier passed after LAHC-mono")
+    best_solution['objectives'].print()
+
+    write_solution(best_solution, seed, max_time, graphics)
+    # generate_graphic_lahc_mono(graphics)
     exit()
 
     # Ceating first population

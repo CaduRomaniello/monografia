@@ -20,7 +20,7 @@ def generate_first_population(original_solution):
         random.shuffle(meetings_left)
         while meetings_left:
             try:
-                verifier(individual)
+                verifier(individual, verbose=False)
             except Exception as e:
                 print(e)
                 if allocated:

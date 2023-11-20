@@ -43,3 +43,19 @@ class Meeting():
             return 'saturday'
         else:
             raise Exception(f'Day of week has as invalid value. It must be a number between [2, 6] but it has value = {self.day_of_week}.')
+        
+    def toJSON(self):
+        return {
+            'id': self.id,
+            'is_practical': self.is_practical,
+            'day_of_week': self.day_of_week,
+            'vacancies': self.vacancies,
+            'demand': self.demand,
+            'subject_code': self.subject_code,
+            'classes': self.classes,
+            'schedules': self.schedules,
+            'classroom_id': self.classroom_id,
+            # 'professors': self.professors,
+            # 'preferences': self.preferences,
+            'relatives_id': self.relatives_id
+        }

@@ -24,5 +24,5 @@ def allocate(solution, meeting_id, classroom_id):
 
 def update_objectives_allocate_move(objectives, demand, capacity):
     objectives.deallocated -= demand
-    objectives.idleness += capacity - demand if capacity - demand > 0 else 0
+    objectives.idleness += (capacity - demand if capacity - demand > 0 else 0) if capacity - demand > capacity / 2 else 0
     objectives.standing += demand - capacity if demand - capacity > 0 else 0

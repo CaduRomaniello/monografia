@@ -20,3 +20,10 @@ class Professor():
         for schedule in schedules:
             self.days[day_name][schedule - 1]["occupied"] = True
             self.days[day_name][schedule - 1]["meeting_id"] = meeting_id
+
+    def toJSON(self):
+        return {
+            "code": self.code,
+            "name": self.name,
+            "days": self.days
+        }

@@ -10,3 +10,24 @@ class Objectives():
         print('Deallocated: ', self.deallocated)
         print('Standing   : ', self.standing)
         print('========================================================')
+
+    def compare(self, other, move, move_response, meetings):
+        if self.idleness == other.idleness and self.deallocated == other.deallocated and self.standing == other.standing:
+            return True
+        else:
+            print(move)
+            print(move_response)
+            meetings[move_response['meeting_1'] - 1].print()
+            meetings[move_response['meeting_2'] - 1].print()
+            self.print()
+            print('--------------------------------------------------')
+            other.print()
+            print()
+            return False
+        
+    def toJSON(self):
+        return {
+            'idleness': self.idleness,
+            'deallocated': self.deallocated,
+            'standing': self.standing
+        }

@@ -7,7 +7,7 @@ def allocation_cost(meeting, classrooms):
         cost.append([])
         for c in classrooms:
             alocation_cost = 0
-            alocation_cost += c.capacity - m.demand if c.capacity - m.demand > 0 else 0
+            alocation_cost += (c.capacity - m.demand if c.capacity - m.demand > 0 else 0) if c.capacity - m.demand > c.capacity / 2 else 0
             alocation_cost += m.demand - c.capacity if m.demand - c.capacity > 0 else 0
             cost[-1].append(alocation_cost)
         cost[-1].append(m.demand)
@@ -17,6 +17,8 @@ def isReservated(classroom, schedule, day_name):
     return classroom.days[day_name][schedule]['is_reservation']
 
 def mipPy(solution, instance):
+    print("[INFO] Starting MIP")
+
     grouped_schedules = []
 
     for i in range(len(solution['meetings'])):
@@ -66,6 +68,20 @@ def mipPy(solution, instance):
 
     m.optimize()  
     m.write("mip_lb.lp")
-    return m.objective_value
 
-    print('finalizei')
+    allocations = []
+
+    for e in range(E):
+        aux = {
+            'meeting_id': solution['meetings'][e].id,
+            'classroom_id': 0
+        }
+        for s in range(S - 1):
+            if (isinstance(ehs[e][s][solution['meetings'][e].schedules[0] - 1], Var) and ehs[e][s][solution['meetings'][e].schedules[0] - 1].x > 0.5):
+            # if (ehs[e][s][solution['meetings'][e].schedules[0] - 1].x > 0.5):
+                aux['classroom_id'] = s + 1
+        allocations.append(aux)
+
+    print("[INFO] MIP finished")
+
+    return m.objective_value, allocations

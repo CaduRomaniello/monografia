@@ -42,3 +42,16 @@ class Classroom():
             self.days[day_name][s - 1]['occupied'] = False
             self.days[day_name][s - 1]['meeting_id'] = None
             self.days[day_name][s - 1]['is_reservation'] = False
+
+    def toJSON(self):
+        return {
+            'id': self.id,
+            'is_lab': self.is_lab,
+            'capacity': self.capacity,
+            'building_id': self.building_id,
+            'description': self.description,
+            'floor': self.floor,
+            'board': self.board,
+            'projector': self.projector,
+            # 'days': self.days
+        }
