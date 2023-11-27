@@ -20,18 +20,17 @@ SWAP_OR_REPLACE = 3
 
 ALPHA = 10**(-2)
 
-def lahc_mono(original_solution, list_size, max_time):
-    print("[INFO] LAHC mono objective")
+def lahc_multi(original_solution, list_size, max_time):
+    print("[INFO] LAHC multi objective")
     print(f"[INFO] Started at: {datetime.now()}")
 
-    # solution = copy.deepcopy(generate_first_population(original_solution)[0])
-    solution = copy.deepcopy(generate_greedy_solution(original_solution))
+    solution = copy.deepcopy(generate_first_population(original_solution)[0])
+    # solution = copy.deepcopy(generate_greedy_solution(original_solution))
     verifier(solution)
 
-    list = [solution_cost(solution['objectives']) for _ in range(list_size)]
-    best_solution = copy.deepcopy(solution)
-    first_cost = solution_cost(solution['objectives'])
-    print(f"[INFO] LAHC mono objective: {first_cost}")
+    list = [copy.deepcopy(solution['objectives']) for _ in range(list_size)]
+    pareto_front = [copy.deepcopy(solution)]
+    # best_solution = copy.deepcopy(solution)
 
     start_time = datetime.now()
     probabilities = [0.25, 0.25, 0.25, 0.25]
@@ -39,16 +38,10 @@ def lahc_mono(original_solution, list_size, max_time):
     list_index = 0
     max_time_with_no_improvement = 45
     last_improvement = datetime.now()
-
-    graphics = []
-    graphics.append({
-        'value': first_cost,
-        'time': 0
-    })
     
     while(datetime.now() - start_time < timedelta(seconds=max_time)):
-        objectives = copy.deepcopy(solution['objectives'])
-        actual_cost = solution_cost(solution['objectives'])
+    # while(True):
+        actual_objectives = copy.deepcopy(solution['objectives'])
 
         move_selector = random.random()
         move = None
@@ -71,18 +64,16 @@ def lahc_mono(original_solution, list_size, max_time):
         elif move == SWAP_OR_REPLACE:
             move_response = draw_swap_or_replace(solution)
         else:
-            raise Exception('Invalid move at LAHC-MONO')
+            raise Exception('Invalid move at LAHC-MULTI')
         
         if move_response["move_done"]:
-            # print(f'----------------> {solution_cost(solution["objectives"])}')
-            new_cost = solution_cost(solution["objectives"])
-            if new_cost <= list[list_index] or new_cost <= actual_cost:
-                list[list_index] = new_cost
+            if check_new_solution_acceptance(solution['objectives'], actual_objectives, list[list_index]):
+                dominates, isDominatedBy = evaluate_new_solution_dominance(solution['objectives'], pareto_front)
 
-                automaton_F1(probabilities, ALPHA, 1, move)
-                for i in range(len(probabilities)):
-                    if (i != move):
-                        automaton_F2(probabilities, ALPHA, 1, i)
+                if len(isDominatedBy) == 0:
+                    update_pareto_front(solution, dominates, pareto_front)
+
+                list[list_index] = copy.deepcopy(solution['objectives'])
             else:
                 if move == ALLOCATE:
                     deallocate(solution, move_response["meeting_1"])
@@ -93,25 +84,10 @@ def lahc_mono(original_solution, list_size, max_time):
                 elif move == SWAP_OR_REPLACE:
                     undo_swap_or_replace(solution, move_response)
                 else:
-                    raise Exception('Invalid move at LAHC-MONO (undo move)')
+                    raise Exception('Invalid move at LAHC-MULTI (undo move)')
                 
-                if not objectives.compare(solution['objectives'], move, move_response, solution['meetings']):
-                    raise Exception('Invalid undo move at LAHC-MONO (objectives)')
-
-                automaton_F1(probabilities, ALPHA, 0, move)
-
-                for i in range(len(probabilities)):
-                    if (i != move):
-                        automaton_F2(probabilities, ALPHA, 0, i)
-            
-            if new_cost < solution_cost(best_solution["objectives"]):
-                # print(f"[INFO] LAHC mono objective: {new_cost}")
-                graphics.append({
-                    'value': new_cost,
-                    'time': float(str((datetime.now() - start_time).seconds) + '.' + str((datetime.now() - start_time).microseconds))
-                })
-                best_solution = copy.deepcopy(solution)
-                last_improvement = datetime.now()
+                if not actual_objectives.compare(solution['objectives'], move, move_response, solution['meetings']):
+                    raise Exception('Invalid undo move at LAHC-MULTI (objectives)')
 
         if list_index == len(list) - 1:
             list_index = 0
@@ -120,25 +96,14 @@ def lahc_mono(original_solution, list_size, max_time):
 
         verifier(solution, verbose=False)
 
-        if datetime.now() - last_improvement > timedelta(seconds=max_time_with_no_improvement):
-            max_time_with_no_improvement += 10
-            probabilities = [0.25, 0.25, 0.25, 0.25]
-            # solution['objectives'].print()
-            # print(f'------> {solution_cost(solution["objectives"])}')
-            perturbation(solution)
-            # print(f'------> {solution_cost(solution["objectives"])}')
-            print()
-            # solution['objectives'].print()
+        # if datetime.now() - last_improvement > timedelta(seconds=max_time_with_no_improvement):
+        #     max_time_with_no_improvement += 10
+        #     probabilities = [0.25, 0.25, 0.25, 0.25]
+        #     perturbation(solution)
 
     print(f"[INFO] Finished at: {datetime.now()}")
-    print(f"[INFO] LAHC mono objective: {first_cost} -> {solution_cost(best_solution['objectives'])}")
 
-    graphics.append({
-        'value': solution_cost(best_solution['objectives']),
-        'time': max_time
-    })
-
-    return best_solution, graphics
+    return pareto_front
 
 def draw_allocate(solution):
     meeting_index = random.randrange(0, len(solution['meetings']))
@@ -298,10 +263,10 @@ def undo_swap_or_replace(solution, move_response):
         deallocate(solution, move_response["meeting_1"])
         allocate(solution, move_response["meeting_2"], move_response["classroom_1"])
     else:
-        raise Exception('Invalid move at LAHC-MONO (undo swap or replace)')
+        raise Exception('Invalid move at LAHC-MULTI (undo swap or replace)')
     
 def perturbation(solution):
-    print("[INFO] LAHC mono objective: Perturbation")
+    print("[INFO] LAHC multi objective: Perturbation")
 
     movements_count = 0
     while movements_count < 10:
@@ -428,3 +393,31 @@ def perturbation_swap_or_replace(solution):
                 meeting_index_2 += 1
 
     return False
+
+def check_new_solution_acceptance(new_solution_objectives, actual_solution_objectives, list_solution_objectives):
+    if new_solution_objectives.dominates(actual_solution_objectives):
+        return True
+
+    if new_solution_objectives.dominates(list_solution_objectives):
+        return True
+
+    return False
+
+def evaluate_new_solution_dominance(new_solution_objectives, pareto_front):
+    dominates = []
+    isDominatedBy = []
+
+    for i in range(len(pareto_front)):
+        if new_solution_objectives.dominates(pareto_front[i]['objectives']):
+            dominates.append(i)
+
+        if pareto_front[i]['objectives'].dominates(new_solution_objectives):
+            isDominatedBy.append(i)
+
+    return dominates, isDominatedBy
+
+def update_pareto_front(new_solution, dominates, pareto_front):
+    for i in range(len(dominates) - 1, -1, -1):
+        pareto_front.pop(dominates[i])
+    
+    pareto_front.append(copy.deepcopy(new_solution))

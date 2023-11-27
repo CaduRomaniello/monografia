@@ -2,6 +2,8 @@ import sys
 from pas import pas
 
 def main():
+    pas('instance.json', '1', 30)
+    exit()
     if len(sys.argv) != 4:
         print("[Warning] You must pass two and only two parameters for the program to run, the first is the input file, the second is the random seed and the third is the max time for lahc mono")
 

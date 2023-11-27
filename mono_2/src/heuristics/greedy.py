@@ -4,7 +4,7 @@ from utils.cost import solution_cost
 from movements.allocate import allocate
 from movements.deallocate import deallocate
 
-def generate_greedy_solutoin(original_solution):
+def generate_greedy_solution(original_solution):
     print("[INFO] Generating greedy solution")
 
     solution = copy.deepcopy(original_solution)

@@ -31,3 +31,12 @@ class Objectives():
             'deallocated': self.deallocated,
             'standing': self.standing
         }
+    
+    def dominates(self, other):
+        if self.idleness <= other.idleness and self.deallocated <= other.deallocated and self.standing <= other.standing:
+            if self.idleness < other.idleness or self.deallocated < other.deallocated or self.standing < other.standing:
+                return True
+            else:
+                return False
+        else:
+            return False

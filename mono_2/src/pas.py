@@ -7,6 +7,7 @@ from classes.meeting import Meeting
 
 from classes.objectives import Objectives
 from heuristics.lahc_mono import lahc_mono
+from heuristics.lahc_multi import lahc_multi
 from heuristics.mip import mipPy
 from heuristics.nsgaII import nsgaII
 from movements.allocate import allocate
@@ -56,7 +57,7 @@ def pas(filename, seed, max_time):
     }
     verifier(original_solution)
 
-    print('14229.0')
+    # Separating solution in subparts to solve it using MIP
     monday = []
     tuesday = []
     wednesday = []
@@ -79,44 +80,97 @@ def pas(filename, seed, max_time):
         else:
             raise Exception('Invalid day of week')
 
-    monday_cost, monday_allocations = mipPy({'meetings': monday, "classrooms": original_classrooms, "objectives": original_objectives}, instance)
-    for i in monday_allocations:
-        if i['classroom_id'] != 0:
-            allocate(original_solution, i['meeting_id'], i['classroom_id'])
+    ###############################################################################################################################################
+    # # Solving subparts using MIP
+    # mip_solution = copy.deepcopy(original_solution)
 
-    tuesday_cost, tuesday_allocations = mipPy({'meetings': tuesday, "classrooms": original_classrooms, "objectives": original_objectives}, instance)
-    for i in tuesday_allocations:
-        if i['classroom_id'] != 0:
-            allocate(original_solution, i['meeting_id'], i['classroom_id'])
+    # ## Monday
+    # monday_cost, monday_allocations = mipPy({'meetings': monday, "classrooms": original_classrooms, "objectives": original_objectives}, instance)
+    # for i in monday_allocations:
+    #     if i['classroom_id'] != 0:
+    #         allocate(mip_solution, i['meeting_id'], i['classroom_id'])
 
-    wednesday_cost, wednesday_allocations = mipPy({'meetings': wednesday, "classrooms": original_classrooms, "objectives": original_objectives}, instance)
-    for i in wednesday_allocations:
-        if i['classroom_id'] != 0:
-            allocate(original_solution, i['meeting_id'], i['classroom_id'])
+    # ## Tuesday
+    # tuesday_cost, tuesday_allocations = mipPy({'meetings': tuesday, "classrooms": original_classrooms, "objectives": original_objectives}, instance)
+    # for i in tuesday_allocations:
+    #     if i['classroom_id'] != 0:
+    #         allocate(mip_solution, i['meeting_id'], i['classroom_id'])
 
-    thursday_cost, thursday_allocations = mipPy({'meetings': thursday, "classrooms": original_classrooms, "objectives": original_objectives}, instance)
-    for i in thursday_allocations:
-        if i['classroom_id'] != 0:
-            allocate(original_solution, i['meeting_id'], i['classroom_id'])
+    # ## Wednesday
+    # wednesday_cost, wednesday_allocations = mipPy({'meetings': wednesday, "classrooms": original_classrooms, "objectives": original_objectives}, instance)
+    # for i in wednesday_allocations:
+    #     if i['classroom_id'] != 0:
+    #         allocate(mip_solution, i['meeting_id'], i['classroom_id'])
 
-    friday_cost, friday_allocations = mipPy({'meetings': friday, "classrooms": original_classrooms, "objectives": original_objectives}, instance)
-    for i in friday_allocations:
-        if i['classroom_id'] != 0:
-            allocate(original_solution, i['meeting_id'], i['classroom_id'])
+    # ## Thursday
+    # thursday_cost, thursday_allocations = mipPy({'meetings': thursday, "classrooms": original_classrooms, "objectives": original_objectives}, instance)
+    # for i in thursday_allocations:
+    #     if i['classroom_id'] != 0:
+    #         allocate(mip_solution, i['meeting_id'], i['classroom_id'])
 
-    saturday_cost, saturday_allocations = mipPy({'meetings': saturday, "classrooms": original_classrooms, "objectives": original_objectives}, instance)
-    for i in saturday_allocations:
-        if i['classroom_id'] != 0:
-            allocate(original_solution, i['meeting_id'], i['classroom_id'])
+    # ## Friday
+    # friday_cost, friday_allocations = mipPy({'meetings': friday, "classrooms": original_classrooms, "objectives": original_objectives}, instance)
+    # for i in friday_allocations:
+    #     if i['classroom_id'] != 0:
+    #         allocate(mip_solution, i['meeting_id'], i['classroom_id'])
 
-    verifier(original_solution)
-    original_solution['objectives'].print()
+    # ## Saturday
+    # saturday_cost, saturday_allocations = mipPy({'meetings': saturday, "classrooms": original_classrooms, "objectives": original_objectives}, instance)
+    # for i in saturday_allocations:
+    #     if i['classroom_id'] != 0:
+    #         allocate(mip_solution, i['meeting_id'], i['classroom_id'])
 
-    exit()
+    # ## Verifying MIP solution
+    # verifier(mip_solution)
+    # mip_solution['objectives'].print()
+    # total_cost = monday_cost + tuesday_cost + wednesday_cost + thursday_cost + friday_cost + saturday_cost
+    # print(f'[INFO] Total cost: {total_cost}')
+    ###############################################################################################################################################
 
-    total_cost = monday_cost + tuesday_cost + wednesday_cost + thursday_cost + friday_cost + saturday_cost
-    print(f'[INFO] Total cost: {total_cost}')
-    exit()
+    ###############################################################################################################################################
+    # # LAHC-MONO
+    # best_solution, graphics = lahc_mono(original_solution, 300, int(max_time))
+    # verifier(best_solution)
+    # print("[INFO] Verifier passed after LAHC-mono")
+    # best_solution['objectives'].print()
+
+    # write_solution(best_solution, seed, max_time, graphics)
+    ###############################################################################################################################################
+
+    ###############################################################################################################################################
+    # # NSGA-II
+    # ## Creating first population
+    # population = generate_first_population(original_solution)
+    # first_population = copy.deepcopy(population)
+
+    # for p in population:
+    #     verifier(p)
+    # print("[INFO] Verifier passed before NSGAII")
+
+    # population, fronts, full_population, full_fronts = nsgaII(population, original_solution)
+    # print(full_fronts)
+
+    # for p in population:
+    #     verifier(p)
+    # print("[INFO] Verifier passed after NSGAII")
+
+    # generate_graphic(first_population, population)
+    ###############################################################################################################################################
+
+    ###############################################################################################################################################
+    # LAHC-MULTI
+    best_solutions = lahc_multi(original_solution, 300, int(max_time))
+
+    for solution in best_solutions:
+        verifier(solution, verbose=False)
+    print("[INFO] Verifier passed after LAHC-multi")
+    print(len(best_solutions))
+
+    for solution in best_solutions:
+        solution['objectives'].print()
+    ###############################################################################################################################################
+
+    # exit()
 
     # best_solution_value, best_allocations = mipPy(original_solution, instance)
     # print(best_solution_value)
@@ -165,13 +219,13 @@ def pas(filename, seed, max_time):
 
     # exit()
 
-    best_solution, graphics = lahc_mono(original_solution, 300, int(max_time))
-    verifier(best_solution)
-    print("[INFO] Verifier passed after LAHC-mono")
-    best_solution['objectives'].print()
+    # best_solution, graphics = lahc_mono(original_solution, 300, int(max_time))
+    # verifier(best_solution)
+    # print("[INFO] Verifier passed after LAHC-mono")
+    # best_solution['objectives'].print()
 
-    write_solution(best_solution, seed, max_time, graphics)
-    # generate_graphic_lahc_mono(graphics)
+    # write_solution(best_solution, seed, max_time, graphics)
+    # # generate_graphic_lahc_mono(graphics)
     exit()
 
     # Ceating first population

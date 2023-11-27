@@ -1,3 +1,5 @@
+# This generates graphics for LAHC mono 
+
 import json
 
 import plotly.graph_objects as go
