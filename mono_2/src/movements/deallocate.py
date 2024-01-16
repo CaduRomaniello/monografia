@@ -1,5 +1,6 @@
 import copy
 import random
+
 from decouple import config
 
 def deallocate(solution, meeting_id):

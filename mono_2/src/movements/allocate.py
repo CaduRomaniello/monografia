@@ -1,5 +1,6 @@
 import copy
 import random
+
 from decouple import config
 
 def allocate(solution, meeting_id, classroom_id):

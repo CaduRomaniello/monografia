@@ -1,0 +1,54 @@
+[
+    [
+        {
+            "idleness": 823,
+            "deallocated": 2519,
+            "standing": 384
+        },
+        {
+            "idleness": 850,
+            "deallocated": 2581,
+            "standing": 384
+        },
+        {
+            "idleness": 1098,
+            "deallocated": 2491,
+            "standing": 384
+        },
+        {
+            "idleness": 761,
+            "deallocated": 2514,
+            "standing": 384
+        },
+        {
+            "idleness": 991,
+            "deallocated": 2559,
+            "standing": 384
+        },
+        {
+            "idleness": 807,
+            "deallocated": 2541,
+            "standing": 384
+        },
+        {
+            "idleness": 841,
+            "deallocated": 2627,
+            "standing": 384
+        },
+        {
+            "idleness": 1065,
+            "deallocated": 2490,
+            "standing": 384
+        },
+        {
+            "idleness": 947,
+            "deallocated": 2515,
+            "standing": 384
+        },
+        {
+            "idleness": 865,
+            "deallocated": 2589,
+            "standing": 384
+        }
+    ]
+]

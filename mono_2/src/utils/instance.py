@@ -1,16 +1,16 @@
-import json
 import os
-from datetime import datetime
+import json
 
-from classes.instanceClassroom import InstanceClassroom
-from classes.instanceBuilding import InstanceBuilding
+from datetime import datetime
 from classes.instanceMeeting import InstanceMeeting
-from classes.instancePreference import InstancePreference
+from classes.instanceSubject import InstanceSubject
+from classes.instanceBuilding import InstanceBuilding
+from classes.instanceSchedule import InstanceSchedule
 from classes.instanceProfessor import InstanceProfessor
+from classes.instanceClassroom import InstanceClassroom
+from classes.instancePreference import InstancePreference
 from classes.instanceReservation import InstanceReservation
 from classes.instanceRestriction import InstanceRestriction
-from classes.instanceSchedule import InstanceSchedule
-from classes.instanceSubject import InstanceSubject
 
 def read_instance(filename):
     print(f"[INFO] Reading instance file '{filename}'")

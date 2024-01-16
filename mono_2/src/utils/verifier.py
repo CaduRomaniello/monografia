@@ -51,3 +51,42 @@ def verify_by_classroom(solution):
                     meeting = solution["meetings"][schedule['meeting_id'] - 1]
                     if meeting.classroom_id != classroom.id:
                         raise Exception(f"Classroom with id '{classroom.id}' is supposed to have meeting with id '{meeting.id}' but it is not. Meeting with id '{meeting.id}' is allocated at '{meeting.classroom_id}' instead.")
+                    
+def remove_duplicates(solutions):
+    print("[INFO] Removing duplicates")
+
+    unique_solutions = []
+
+    for i in range(len(solutions)):
+        has_duplicate = False
+        for j in range(len(unique_solutions)):
+            is_equal = True
+            for k in range(len(solutions[i]['meetings'])):
+                if solutions[i]['meetings'][k].classroom_id != unique_solutions[j]['meetings'][k].classroom_id:
+                    is_equal = False
+                    break
+            if is_equal:
+                has_duplicate = True
+                break
+
+        if not has_duplicate:
+            unique_solutions.append(solutions[i])
+        
+    return unique_solutions
+
+def remove_objectives_duplicates(solutions):
+    print("[INFO] Removing objectives duplicates")
+
+    unique_solutions = []
+
+    for i in range(len(solutions)):
+        has_duplicate = False
+        for j in range(len(unique_solutions)):
+            if (solutions[i].isEqual(unique_solutions[j])):
+                has_duplicate = True
+                break
+
+        if not has_duplicate:
+            unique_solutions.append(solutions[i])
+        
+    return unique_solutions

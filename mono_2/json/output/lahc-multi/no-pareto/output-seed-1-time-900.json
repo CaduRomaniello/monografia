@@ -1,0 +1,72 @@
+[
+    {
+        "objectives": {
+            "idleness": 728,
+            "deallocated": 2151,
+            "standing": 327
+        }
+    },
+    {
+        "objectives": {
+            "idleness": 735,
+            "deallocated": 2149,
+            "standing": 327
+        }
+    },
+    {
+        "objectives": {
+            "idleness": 716,
+            "deallocated": 2174,
+            "standing": 327
+        }
+    },
+    {
+        "objectives": {
+            "idleness": 724,
+            "deallocated": 2155,
+            "standing": 327
+        }
+    },
+    {
+        "objectives": {
+            "idleness": 747,
+            "deallocated": 2142,
+            "standing": 327
+        }
+    },
+    {
+        "objectives": {
+            "idleness": 784,
+            "deallocated": 2124,
+            "standing": 327
+        }
+    },
+    {
+        "objectives": {
+            "idleness": 769,
+            "deallocated": 2126,
+            "standing": 327
+        }
+    },
+    {
+        "objectives": {
+            "idleness": 744,
+            "deallocated": 2145,
+            "standing": 327
+        }
+    },
+    {
+        "objectives": {
+            "idleness": 751,
+            "deallocated": 2128,
+            "standing": 327
+        }
+    },
+    {
+        "objectives": {
+            "idleness": 800,
+            "deallocated": 2117,
+            "standing": 327
+        }
+    }
+]

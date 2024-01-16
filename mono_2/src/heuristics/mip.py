@@ -1,4 +1,5 @@
 import numpy
+
 from mip import *
 
 def allocation_cost(meeting, classrooms):
@@ -67,7 +68,7 @@ def mipPy(solution, instance):
                     m += ehs[e][s][grouped_schedules[e][h][0] - 1] == ehs[e][s][grouped_schedules[e][h][1] - 1]
 
     m.optimize()  
-    m.write("mip_lb.lp")
+    # m.write("mip_lb.lp")
 
     allocations = []
 

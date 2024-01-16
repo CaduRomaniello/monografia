@@ -1,17 +1,18 @@
 import copy
 import math
-from datetime import datetime, timedelta
 import random
+
 from time import sleep
-from heuristics.greedy import generate_greedy_solution
-from heuristics.learning_automaton import automaton_F1, automaton_F2
-from movements.allocate import allocate
-from movements.deallocate import deallocate
-from movements.shift import shift
 from movements.swap import swap
-from utils.cost import solution_cost
-from utils.population import generate_first_population
+from movements.shift import shift
 from utils.verifier import verifier
+from utils.cost import solution_cost
+from movements.allocate import allocate
+from datetime import datetime, timedelta
+from movements.deallocate import deallocate
+from heuristics.greedy import generate_greedy_solution
+from utils.population import generate_first_population
+from heuristics.learning_automaton import automaton_F1, automaton_F2
 
 ALLOCATE = 0
 DEALLOCATE = 1

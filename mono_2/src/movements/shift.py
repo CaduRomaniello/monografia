@@ -1,5 +1,6 @@
 import copy
 import random
+
 from decouple import config
 
 from movements.allocate import allocate

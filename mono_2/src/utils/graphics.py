@@ -1,6 +1,6 @@
+import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
-import numpy as np
 
 # NSGA-II
 def generate_graphic(original_population, final_population):

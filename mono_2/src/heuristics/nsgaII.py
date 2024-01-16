@@ -1,12 +1,13 @@
 import copy
 import random
-from decouple import config
-from tqdm import tqdm
 
-from movements.allocate import allocate
-from movements.deallocate import deallocate
-from movements.shift import shift
+from tqdm import tqdm
+from decouple import config
 from movements.swap import swap
+from movements.shift import shift
+from movements.allocate import allocate
+from utils.pareto import nondominated_sort
+from movements.deallocate import deallocate
 
 GENERATIONS = int(config('GENERATIONS'))
 CHANCE_OF_MUTATION = float(config('CHANCE_OF_MUTATION'))
@@ -39,7 +40,11 @@ def nsgaII(population, original_solution):
 
         population = next_generation
 
-    return population, nondominated_sort(population), new_population, sorted_fronts
+    print(f"-------------------------> {len(sorted_fronts)}")
+    print(f"-------------------------> {len(sorted_fronts[0])}")
+    print(f"-------------------------> {len(new_population)}")
+
+    return population
 
 def crossover(parents, original_solution):
     random.shuffle(parents)
@@ -196,46 +201,3 @@ def mutation_swap_or_replace(solution):
                 meeting_index_2 += 1
 
     return False
-
-def dominates(objectives_1, objectives_2):
-    if (objectives_1.deallocated < objectives_2.deallocated) and (objectives_1.idleness < objectives_2.idleness) and (objectives_1.standing < objectives_2.standing):
-        return True
-    else:
-        return False
-    
-def nondominated_sort(solutions):
-    fronts = []
-    domination_count = [0] * len(solutions)
-    dominated_solutions = [[] for _ in range(len(solutions))]
-
-    for i in range(len(solutions)):
-        for j in range(i + 1, len(solutions)):
-            if dominates(solutions[i]["objectives"], solutions[j]["objectives"]):
-                dominated_solutions[i].append(j)
-                domination_count[j] += 1
-            elif dominates(solutions[j]["objectives"], solutions[i]["objectives"]):
-                dominated_solutions[j].append(i)
-                domination_count[i] += 1
-
-    front = []
-    for i in range(len(solutions)):
-        if domination_count[i] == 0:
-            front.append(i)
-
-    while front:
-        next_front = []
-        for i in front:
-            for j in dominated_solutions[i]:
-                domination_count[j] -= 1
-                if domination_count[j] == 0:
-                    next_front.append(j)
-        fronts.append(front)
-        front = next_front
-
-    return fronts
-
-    # sorted_solutions = []
-    # for front in fronts:
-    #     sorted_solutions.extend([solutions[i] for i in front])
-
-    # return sorted_solutions

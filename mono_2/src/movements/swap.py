@@ -1,7 +1,7 @@
 import copy
 import random
-from decouple import config
 
+from decouple import config
 from movements.allocate import allocate
 from movements.deallocate import deallocate
 

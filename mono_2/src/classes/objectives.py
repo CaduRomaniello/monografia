@@ -25,6 +25,12 @@ class Objectives():
             print()
             return False
         
+    def isEqual(self, other):
+        if self.idleness == other.idleness and self.deallocated == other.deallocated and self.standing == other.standing:
+            return True
+        else:
+            return False
+        
     def toJSON(self):
         return {
             'idleness': self.idleness,

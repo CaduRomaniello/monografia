@@ -1,56 +1,224 @@
-# This generates graphics for LAHC mono 
-
-import json
-
-import plotly.graph_objects as go
-import plotly.express as px
 import os
+import copy
 import json
-import plotly.express as px
+import plotly.graph_objects as go
 
-direct = "%s"%(os.getcwd())
-fig = go.Figure()
- 
-data = []
-for i in range(10):
-    f = open(f'../json/output/graphics/graphics-seed-{i+1}-time-900.json')
-    data.append(json.load(f))
+from heuristics.mip import mipPy
+from movements.allocate import allocate
+from classes.objectives import Objectives
+from utils.instance import parse_data, read_instance
+from utils.pareto import nondominated_sort, dominates
+from utils.population import generate_first_population
+from utils.verifier import remove_objectives_duplicates, verifier
+from utils.dataManipulation import allocate_professors, allocate_reservations, create_variable_classrooms, create_variable_meetings, create_variable_professors, find_preferences, find_relatives_meetings
 
-graph_data = []
-best_value = 4125
-for i in range(len(data)):
-    graph_data.append({
-        'times': [],
-        'gaps': []
-    })
-    for item in data[i]:
-        if item['value'] != 0:
-            gap = ((item['value'] - best_value) / item['value']) * 100
+def normalize_values(values_1, values_2, values_3):
+    max_value = max(max(values_1), max(values_2), max(values_3))
+    min_value = min(min(values_1), min(values_2), min(values_3))
+    return [((value - min_value) / (max_value - min_value)) if (max_value - min_value != 0) else 1 for value in values_1],\
+           [((value - min_value) / (max_value - min_value)) if (max_value - min_value != 0) else 1 for value in values_2],\
+           [((value - min_value) / (max_value - min_value)) if (max_value - min_value != 0) else 1 for value in values_3]
+
+def graphics(filename):
+    ###############################################################################################################################################
+    # READING INSTANCE DATA AND SOLVING MIP
+    objectives = Objectives()
+
+    # Reading instance data
+    instance_data = read_instance(filename)
+
+    # Creating variables
+    instance = parse_data(instance_data)
+    classrooms = create_variable_classrooms(instance)
+    professors = create_variable_professors(instance)
+    meetings = create_variable_meetings(instance, objectives)
+
+    # Allocating professors, reservations, preferences and looking for relatives meetings
+    relatives_meetings = find_relatives_meetings(meetings)
+    allocate_professors(meetings, professors)
+    allocate_reservations(classrooms, instance["reservations"])
+    find_preferences(meetings, instance["preferences"])
+
+    # Saving original solution
+    print(f"[INFO] Saving original solution")
+    original_meetings = copy.deepcopy(meetings)
+    original_classrooms = copy.deepcopy(classrooms)
+    original_objectives = copy.deepcopy(objectives)
+    original_solution = {
+        "meetings": original_meetings,
+        "classrooms": original_classrooms,
+        "objectives": original_objectives
+    }
+    verifier(original_solution)
+
+    print(len(original_meetings))
+    print(len(classrooms))
+    print(len(instance_data['schedules']))
+    # exit()
+
+    # Separating solution in subparts to solve it using MIP
+    monday = []
+    tuesday = []
+    wednesday = []
+    thursday = []
+    friday = []
+    saturday = []
+    for meeting in original_meetings:
+        if meeting.day_name() == 'monday':
+            monday.append(meeting)
+        elif meeting.day_name() == 'tuesday':
+            tuesday.append(meeting)
+        elif meeting.day_name() == 'wednesday':
+            wednesday.append(meeting)
+        elif meeting.day_name() == 'thursday':
+            thursday.append(meeting)
+        elif meeting.day_name() == 'friday':
+            friday.append(meeting)
+        elif meeting.day_name() == 'saturday':
+            saturday.append(meeting)
         else:
-            gap = 0
+            raise Exception('Invalid day of week')
 
-        graph_data[i]['times'].append(item['time'])
-        graph_data[i]['gaps'].append(gap)
+    # Solving subparts using MIP
+    mip_solution = copy.deepcopy(original_solution)
 
-fig.update_layout(title="%s"%('LAHC-mono'),
-                   xaxis_title="Tempo (s)",
-                   yaxis_title='GAP (%)')
+    ## Monday
+    monday_cost, monday_allocations = mipPy({'meetings': monday, "classrooms": original_classrooms, "objectives": original_objectives}, instance)
+    for i in monday_allocations:
+        if i['classroom_id'] != 0:
+            allocate(mip_solution, i['meeting_id'], i['classroom_id'])
 
-for i in range(10):
-    fig.add_trace(go.Scatter(x=graph_data[i]['times'], y=graph_data[i]['gaps'], mode = 'lines', name = f"Seed {i + 1}", line=dict(color=px.colors.qualitative.swatches().data[14].marker.color[i], width=4)))
+    ## Tuesday
+    tuesday_cost, tuesday_allocations = mipPy({'meetings': tuesday, "classrooms": original_classrooms, "objectives": original_objectives}, instance)
+    for i in tuesday_allocations:
+        if i['classroom_id'] != 0:
+            allocate(mip_solution, i['meeting_id'], i['classroom_id'])
 
-fig.update_layout(
-    # title="Plot Title",
-    # xaxis_title="X Axis Title",
-    # yaxis_title="Y Axis Title",
-    # legend_title="Legend Title",
-    font=dict(
-        # family="Arial",
-        size=30,
-        # color="RebeccaPurple"
-    )
-)
+    ## Wednesday
+    wednesday_cost, wednesday_allocations = mipPy({'meetings': wednesday, "classrooms": original_classrooms, "objectives": original_objectives}, instance)
+    for i in wednesday_allocations:
+        if i['classroom_id'] != 0:
+            allocate(mip_solution, i['meeting_id'], i['classroom_id'])
 
-fig.write_html("%s/%s.html"%('../graphics/', 'lahc_mono'))
+    ## Thursday
+    thursday_cost, thursday_allocations = mipPy({'meetings': thursday, "classrooms": original_classrooms, "objectives": original_objectives}, instance)
+    for i in thursday_allocations:
+        if i['classroom_id'] != 0:
+            allocate(mip_solution, i['meeting_id'], i['classroom_id'])
 
-# print(graph_data)
+    ## Friday
+    friday_cost, friday_allocations = mipPy({'meetings': friday, "classrooms": original_classrooms, "objectives": original_objectives}, instance)
+    for i in friday_allocations:
+        if i['classroom_id'] != 0:
+            allocate(mip_solution, i['meeting_id'], i['classroom_id'])
+
+    ## Saturday
+    saturday_cost, saturday_allocations = mipPy({'meetings': saturday, "classrooms": original_classrooms, "objectives": original_objectives}, instance)
+    for i in saturday_allocations:
+        if i['classroom_id'] != 0:
+            allocate(mip_solution, i['meeting_id'], i['classroom_id'])
+
+    ## Verifying MIP solution
+    verifier(mip_solution)
+    mip_solution['objectives'].print()
+    total_cost = monday_cost + tuesday_cost + wednesday_cost + thursday_cost + friday_cost + saturday_cost
+    print(f'[INFO] Total cost: {total_cost}')
+    # exit()
+
+    mip_objectives = copy.deepcopy(mip_solution['objectives'])
+
+
+    ###############################################################################################################################################
+
+    input = filename
+    if filename != 'instance.json':
+        filename = filename.split('.')[0].split('input-')[1]
+    else:
+        filename = filename.split('.')[0]
+    filename = f'output-instance-{filename}'
+
+    current_directory = os.getcwd()
+    print('Diretório de Trabalho Atual:', current_directory)
+
+    lahc_multi_data = []
+    for i in range(5):
+        with open(f'../json/output/lahc-multi/{filename}-params-seed-{i + 1}-time-900.json', 'r') as file:
+            data = json.load(file)
+            data = [Objectives(i["idleness"], i["deallocated"], i["standing"]) for i in data[0]]
+            lahc_multi_data = lahc_multi_data + data
+    lahc_multi_data = remove_objectives_duplicates(lahc_multi_data)
+
+    nsgaII_data = []
+    for i in range(5):
+        with open(f'../json/output/nsgaII/{filename}-params-seed-{i + 1}-time-900.json', 'r') as file:
+            data = json.load(file)
+            data = [Objectives(i["idleness"], i["deallocated"], i["standing"]) for i in data[0]]
+            nsgaII_data = nsgaII_data + data
+    nsgaII_data = remove_objectives_duplicates(nsgaII_data)
+    
+    # lahc_multi_data[0] = [Objectives(i["idleness"], i["deallocated"], i["standing"]) for i in lahc_multi_data[0]]
+    # lahc_multi_data = remove_objectives_duplicates(lahc_multi_data[0])
+
+    # nsgaII_data[0] = [Objectives(i["idleness"], i["deallocated"], i["standing"]) for i in nsgaII_data[0]]
+    # nsgaII_data = remove_objectives_duplicates(nsgaII_data[0])
+
+    mip_data = [mip_objectives]
+
+    # initial_population = generate_first_population(original_solution, percentage=0.2, greedy=False)
+    # initial_population = [i['objectives'] for i in initial_population]
+    # initial_population = remove_objectives_duplicates(initial_population)
+
+    ###############################################################################################################################################
+
+    x_axis_lahc_multi = [i.idleness for i in lahc_multi_data]
+    y_axis_lahc_multi = [i.deallocated for i in lahc_multi_data]
+    z_axis_lahc_multi = [i.standing for i in lahc_multi_data]
+
+    x_axis_nsgaII = [i.idleness for i in nsgaII_data]
+    y_axis_nsgaII = [i.deallocated for i in nsgaII_data]
+    z_axis_nsgaII = [i.standing for i in nsgaII_data]
+
+    x_axis_mip = [i.idleness for i in mip_data]
+    y_axis_mip = [i.deallocated for i in mip_data]
+    z_axis_mip = [i.standing for i in mip_data]
+
+    # x_axis_initial = [i.idleness for i in initial_population]
+    # y_axis_initial = [i.deallocated for i in initial_population]
+    # z_axis_initial = [i.standing for i in initial_population]
+
+    x_axis_lahc_multi, x_axis_nsgaII, x_axis_mip = normalize_values(x_axis_lahc_multi, x_axis_nsgaII, x_axis_mip)
+    y_axis_lahc_multi, y_axis_nsgaII, y_axis_mip = normalize_values(y_axis_lahc_multi, y_axis_nsgaII, y_axis_mip)
+    z_axis_lahc_multi, z_axis_nsgaII, z_axis_mip = normalize_values(z_axis_lahc_multi, z_axis_nsgaII, z_axis_mip)
+
+    fig = go.Figure()
+
+    lahc_multi_scatter = go.Scatter3d(x=x_axis_lahc_multi, y=y_axis_lahc_multi, z=z_axis_lahc_multi, mode='markers', name='MOLA', hovertemplate='<b>Idleness</b>: %{x}'+'<br><b>Deallocated</b>: %{y}<br><b>Standing</b>: %{z}', marker=dict(color='red', size=2))
+    nsgaII_scatter = go.Scatter3d(x=x_axis_nsgaII, y=y_axis_nsgaII, z=z_axis_nsgaII, mode='markers', name='NSGA-II', hovertemplate='<b>Idleness</b>: %{x}'+'<br><b>Deallocated</b>: %{y}<br><b>Standing</b>: %{z}', marker=dict(color='blue', size=2))
+    mip_scatter = go.Scatter3d(x=x_axis_mip, y=y_axis_mip, z=z_axis_mip, mode='markers', name='MIP', hovertemplate='<b>Idleness</b>: %{x}'+'<br><b>Deallocated</b>: %{y}<br><b>Standing</b>: %{z}', marker=dict(color='green', size=2))
+    # initial_scatter = go.Scatter3d(x=x_axis_initial, y=y_axis_initial, z=z_axis_initial, mode='markers', name='Initial Population', hovertemplate='<b>Idleness</b>: %{x}'+'<br><b>Deallocated</b>: %{y}<br><b>Standing</b>: %{z}')
+
+    fig.add_trace(lahc_multi_scatter)
+    fig.add_trace(nsgaII_scatter)
+    fig.add_trace(mip_scatter)
+    # fig.add_trace(initial_scatter)
+
+    fig.update_layout(scene=dict(xaxis_title='Idleness', yaxis_title='Deallocated', zaxis_title='Standing'))
+
+    fig.update_layout(title=f'Solutions Comparison ({input})')
+
+    fig.update_layout(legend=dict(title='Algorithms'))
+
+    # fig = go.Figure(data=[
+    #         go.Scatter3d(x=x_axis_nsgaII, y=y_axis_nsgaII, z=z_axis_nsgaII, mode='markers', marker=dict(color='red', size=7)),
+    #         go.Scatter3d(x=x_axis_lahc_multi, y=y_axis_lahc_multi, z=z_axis_lahc_multi, mode='markers', marker=dict(color='blue', size=7)),
+    #         go.Scatter3d(x=x_axis_mip, y=y_axis_mip, z=z_axis_mip, mode='markers', marker=dict(color='green', size=7))
+    #     ]
+    # )
+
+    # fig.update_layout(scene=dict(xaxis_title='Idleness', yaxis_title='Deallocated', zaxis_title='Standing'))
+
+    # Exibir o gráfico
+    fig.show()
+    fig.write_image(f"../graphics/{input.split('.')[0]}.png", engine='kaleido')
+
+graphics('input-seed-5-size-1000.json')

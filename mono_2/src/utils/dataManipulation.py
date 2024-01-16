@@ -1,11 +1,10 @@
 import copy
 import random
+
 from tqdm import tqdm
-
-from classes.classroom import Classroom
 from classes.meeting import Meeting
+from classes.classroom import Classroom
 from classes.professor import Professor
-
 
 def create_variable_classrooms(instance):
     print("\n[INFO] Creating variable classrooms")
