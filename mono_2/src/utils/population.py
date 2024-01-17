@@ -49,3 +49,44 @@ def generate_first_population(original_solution, greedy=False, percentage=0.07):
             population.append(individual)
         
     return population
+
+def generate_first_population_alternated(original_solution, percentage=0.07, individuals=None):
+    print(f"\n[INFO] Generating first population with {INDIVIDUALS_PER_POPULATION} individuals")
+
+    population = []
+    iterations = INDIVIDUALS_PER_POPULATION if not individuals else individuals
+    for i in tqdm(range(iterations)):
+        individual = copy.deepcopy(original_solution)
+        allocated = False
+
+        if i % 2 != 0:
+            population.append(generate_greedy_solution(individual, percentage=percentage, ordered_meetings=random.shuffle(individual['meetings'].copy())))
+        else:
+            meetings_left = [x + 1 for x in range(len(individual['meetings']))]
+            random.shuffle(meetings_left)
+            while meetings_left:
+                try:
+                    verifier(individual, verbose=False)
+                except Exception as e:
+                    print(e)
+                    if allocated:
+                        print(f"[ERROR] Error while allocating meeting {meeting_id} in classroom {classroom_index + 1}")
+                    exit()
+                meeting_id = meetings_left.pop()
+
+                classroom_index = random.randrange(0, len(individual['classrooms']))
+                allocated = False
+                for j in range(len(individual['classrooms'])):
+                    allocated = allocate(individual, meeting_id, classroom_index + 1)
+
+                    if allocated:
+                        break
+                    else:
+                        if classroom_index == len(individual['classrooms']) - 1:
+                            classroom_index = 0
+                        else:
+                            classroom_index += 1
+            
+            population.append(individual)
+        
+    return population

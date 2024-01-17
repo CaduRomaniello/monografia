@@ -18,10 +18,10 @@ from movements.deallocate import deallocate
 from heuristics.lahc_multi import lahc_multi
 from utils.instance import parse_data, read_instance
 from heuristics.greedy import generate_greedy_solution
-from utils.population import generate_first_population
 from utils.files import write_solution, write_solutions_multi
 from utils.graphics import generate_graphic, generate_graphic_lahc_mono
 from utils.verifier import remove_duplicates, remove_objectives_duplicates, verifier
+from utils.population import generate_first_population, generate_first_population_alternated
 from utils.dataManipulation import allocate_professors, allocate_reservations, create_variable_classrooms, create_variable_meetings, create_variable_professors, find_preferences, find_relatives_meetings
 
 def serialize(obj):

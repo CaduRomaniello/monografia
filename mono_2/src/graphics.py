@@ -1,13 +1,15 @@
 import os
 import copy
 import json
+import numpy as np
 import plotly.graph_objects as go
 
 from heuristics.mip import mipPy
+from utils.pareto import dominates
 from movements.allocate import allocate
 from classes.objectives import Objectives
+from pymoo.indicators.hv import Hypervolume
 from utils.instance import parse_data, read_instance
-from utils.pareto import nondominated_sort, dominates
 from utils.population import generate_first_population
 from utils.verifier import remove_objectives_duplicates, verifier
 from utils.dataManipulation import allocate_professors, allocate_reservations, create_variable_classrooms, create_variable_meetings, create_variable_professors, find_preferences, find_relatives_meetings
@@ -18,6 +20,37 @@ def normalize_values(values_1, values_2, values_3):
     return [((value - min_value) / (max_value - min_value)) if (max_value - min_value != 0) else 1 for value in values_1],\
            [((value - min_value) / (max_value - min_value)) if (max_value - min_value != 0) else 1 for value in values_2],\
            [((value - min_value) / (max_value - min_value)) if (max_value - min_value != 0) else 1 for value in values_3]
+
+def nondominated_sort(solutions):
+    fronts = []
+    domination_count = [0] * len(solutions)
+    dominated_solutions = [[] for _ in range(len(solutions))]
+
+    for i in range(len(solutions)):
+        for j in range(i + 1, len(solutions)):
+            if dominates(solutions[i], solutions[j]):
+                dominated_solutions[i].append(j)
+                domination_count[j] += 1
+            elif dominates(solutions[j], solutions[i]):
+                dominated_solutions[j].append(i)
+                domination_count[i] += 1
+
+    front = []
+    for i in range(len(solutions)):
+        if domination_count[i] == 0:
+            front.append(i)
+
+    while front:
+        next_front = []
+        for i in front:
+            for j in dominated_solutions[i]:
+                domination_count[j] -= 1
+                if domination_count[j] == 0:
+                    next_front.append(j)
+        fronts.append(front)
+        front = next_front
+
+    return fronts
 
 def graphics(filename):
     ###############################################################################################################################################
@@ -141,20 +174,28 @@ def graphics(filename):
     print('Diretório de Trabalho Atual:', current_directory)
 
     lahc_multi_data = []
+    number_of_solutions_lahc = []
     for i in range(5):
         with open(f'../json/output/lahc-multi/{filename}-params-seed-{i + 1}-time-900.json', 'r') as file:
             data = json.load(file)
+            number_of_solutions_lahc.append(len(data[0]))
             data = [Objectives(i["idleness"], i["deallocated"], i["standing"]) for i in data[0]]
             lahc_multi_data = lahc_multi_data + data
     lahc_multi_data = remove_objectives_duplicates(lahc_multi_data)
+    pareto_front = nondominated_sort(lahc_multi_data)[0]
+    lahc_multi_data = [lahc_multi_data[i] for i in pareto_front]
 
     nsgaII_data = []
+    number_of_solutions_nsgaII = []
     for i in range(5):
         with open(f'../json/output/nsgaII/{filename}-params-seed-{i + 1}-time-900.json', 'r') as file:
             data = json.load(file)
+            number_of_solutions_nsgaII.append(len(data[0]))
             data = [Objectives(i["idleness"], i["deallocated"], i["standing"]) for i in data[0]]
             nsgaII_data = nsgaII_data + data
     nsgaII_data = remove_objectives_duplicates(nsgaII_data)
+    pareto_front = nondominated_sort(nsgaII_data)[0]
+    nsgaII_data = [nsgaII_data[i] for i in pareto_front]
     
     # lahc_multi_data[0] = [Objectives(i["idleness"], i["deallocated"], i["standing"]) for i in lahc_multi_data[0]]
     # lahc_multi_data = remove_objectives_duplicates(lahc_multi_data[0])
@@ -190,6 +231,49 @@ def graphics(filename):
     y_axis_lahc_multi, y_axis_nsgaII, y_axis_mip = normalize_values(y_axis_lahc_multi, y_axis_nsgaII, y_axis_mip)
     z_axis_lahc_multi, z_axis_nsgaII, z_axis_mip = normalize_values(z_axis_lahc_multi, z_axis_nsgaII, z_axis_mip)
 
+    ###############################################################################################################################################
+
+    hv_lahc_data = []
+    for i in range(len(x_axis_lahc_multi)):
+        hv_lahc_data.append([x_axis_lahc_multi[i], y_axis_lahc_multi[i], z_axis_lahc_multi[i]])
+
+    hv_nsgaII_data = []
+    for i in range(len(x_axis_nsgaII)):
+        hv_nsgaII_data.append([x_axis_nsgaII[i], y_axis_nsgaII[i], z_axis_nsgaII[i]])
+
+    reference_point = np.array([2.0, 2.0, 2.0])
+    hv_calculator = Hypervolume(reference_point)
+
+    hypervolume_lahc = hv_calculator.do(np.array(hv_lahc_data))
+    print("Hypervolume LAHC:", hypervolume_lahc)
+
+    hypervolume_nsgaII = hv_calculator.do(np.array(hv_nsgaII_data))
+    print("Hypervolume NSGA-II:", hypervolume_nsgaII)
+
+    lahc_metrics = {
+        'hypervolume': hypervolume_lahc,
+        'number_of_solutions': number_of_solutions_lahc,
+        'min_solutions': min(number_of_solutions_lahc),
+        'max_solutions': max(number_of_solutions_lahc),
+        'mean_solutions': sum(number_of_solutions_lahc) / len(number_of_solutions_lahc)
+    }
+
+    nsgaII_metrics = {
+        'hypervolume': hypervolume_nsgaII,
+        'number_of_solutions': number_of_solutions_nsgaII,
+        'min_solutions': min(number_of_solutions_nsgaII),
+        'max_solutions': max(number_of_solutions_nsgaII),
+        'mean_solutions': sum(number_of_solutions_nsgaII) / len(number_of_solutions_nsgaII)
+    }
+
+    with open(f'../graphics/tables/lahc-metrics-{input.split(".")[0]}.json', 'w') as f:
+            f.write(json.dumps(lahc_metrics))
+
+    with open(f'../graphics/tables/nsga-metrics-{input.split(".")[0]}.json', 'w') as f:
+            f.write(json.dumps(nsgaII_metrics))
+
+    ###############################################################################################################################################
+
     fig = go.Figure()
 
     lahc_multi_scatter = go.Scatter3d(x=x_axis_lahc_multi, y=y_axis_lahc_multi, z=z_axis_lahc_multi, mode='markers', name='MOLA', hovertemplate='<b>Idleness</b>: %{x}'+'<br><b>Deallocated</b>: %{y}<br><b>Standing</b>: %{z}', marker=dict(color='red', size=2))
@@ -202,7 +286,7 @@ def graphics(filename):
     fig.add_trace(mip_scatter)
     # fig.add_trace(initial_scatter)
 
-    fig.update_layout(scene=dict(xaxis_title='Idleness', yaxis_title='Deallocated', zaxis_title='Standing'))
+    fig.update_layout(scene=dict(xaxis_title='Ociosa (Idl)', yaxis_title='Desalocado (Dea)', zaxis_title='Em pé (Sta)'))
 
     fig.update_layout(title=f'Solutions Comparison ({input})')
 
@@ -219,6 +303,6 @@ def graphics(filename):
 
     # Exibir o gráfico
     fig.show()
-    fig.write_image(f"../graphics/{input.split('.')[0]}.png", engine='kaleido')
+    # fig.write_image(f"../graphics/{input.split('.')[0]}.png", engine='kaleido')
 
-graphics('input-seed-5-size-1000.json')
+graphics('input-seed-6-size-1000.json')

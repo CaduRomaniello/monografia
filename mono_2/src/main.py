@@ -2,7 +2,7 @@ import sys
 from pas import pas
 
 def main():
-    # pas('input-seed-1-size-1000.json', '1', 120, "nsgaII")
+    # pas('input-seed-6-size-1000.json', '1', 120, "nsgaII")
     # exit()
     if len(sys.argv) != 5:
         print("[Warning] You must pass four and only four parameters for the program to run, the first is the input file, the second is the random seed, the third is the max time for lahc mono and the fourth is the algorithm")

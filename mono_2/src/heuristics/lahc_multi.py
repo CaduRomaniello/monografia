@@ -11,8 +11,8 @@ from movements.allocate import allocate
 from datetime import datetime, timedelta
 from movements.deallocate import deallocate
 from heuristics.greedy import generate_greedy_solution
-from utils.population import generate_first_population
 from heuristics.learning_automaton import automaton_F1, automaton_F2
+from utils.population import generate_first_population, generate_first_population_alternated
 
 ALLOCATE = 0
 DEALLOCATE = 1
