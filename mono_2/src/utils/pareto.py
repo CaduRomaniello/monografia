@@ -1,8 +1,9 @@
 def dominates(objectives_1, objectives_2):
-    if (objectives_1.deallocated < objectives_2.deallocated) and (objectives_1.idleness < objectives_2.idleness) and (objectives_1.standing < objectives_2.standing):
-        return True
-    else:
-        return False
+    if (objectives_1.deallocated <= objectives_2.deallocated) and (objectives_1.idleness <= objectives_2.idleness) and (objectives_1.standing <= objectives_2.standing):
+        if (objectives_1.deallocated < objectives_2.deallocated) or (objectives_1.idleness < objectives_2.idleness) or (objectives_1.standing < objectives_2.standing):
+            return True
+        
+    return False
 
 def nondominated_sort(solutions):
     fronts = []

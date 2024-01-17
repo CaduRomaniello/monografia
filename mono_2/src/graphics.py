@@ -305,4 +305,4 @@ def graphics(filename):
     fig.show()
     # fig.write_image(f"../graphics/{input.split('.')[0]}.png", engine='kaleido')
 
-graphics('input-seed-6-size-1000.json')
+graphics('instance.json')
