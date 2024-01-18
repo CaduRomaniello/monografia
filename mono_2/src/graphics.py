@@ -209,6 +209,18 @@ def graphics(filename):
     # initial_population = [i['objectives'] for i in initial_population]
     # initial_population = remove_objectives_duplicates(initial_population)
 
+    mip_dominates = 0
+    mip_is_dominated = 0
+    for i in range(len(nsgaII_data)):
+        if dominates(mip_data[0], nsgaII_data[i]):
+            mip_dominates += 1
+        elif dominates(nsgaII_data[i], mip_data[0]):
+            mip_is_dominated += 1
+
+    print(f'MIP dominates {mip_dominates} solutions')
+    print(f'MIP is dominated by {mip_is_dominated} solutions')
+    print(f'Total solutions of NSGAII algorithm: {len(nsgaII_data)}')
+
     ###############################################################################################################################################
 
     x_axis_lahc_multi = [i.idleness for i in lahc_multi_data]
@@ -241,6 +253,10 @@ def graphics(filename):
     for i in range(len(x_axis_nsgaII)):
         hv_nsgaII_data.append([x_axis_nsgaII[i], y_axis_nsgaII[i], z_axis_nsgaII[i]])
 
+    hv_mip_data = []
+    for i in range(len(x_axis_mip)):
+        hv_mip_data.append([x_axis_mip[i], y_axis_mip[i], z_axis_mip[i]])
+
     reference_point = np.array([2.0, 2.0, 2.0])
     hv_calculator = Hypervolume(reference_point)
 
@@ -249,6 +265,9 @@ def graphics(filename):
 
     hypervolume_nsgaII = hv_calculator.do(np.array(hv_nsgaII_data))
     print("Hypervolume NSGA-II:", hypervolume_nsgaII)
+
+    hypervolume_mip = hv_calculator.do(np.array(hv_mip_data))
+    print("Hypervolume MIP:", hypervolume_mip)
 
     lahc_metrics = {
         'hypervolume': hypervolume_lahc,
@@ -266,11 +285,25 @@ def graphics(filename):
         'mean_solutions': sum(number_of_solutions_nsgaII) / len(number_of_solutions_nsgaII)
     }
 
-    with open(f'../graphics/tables/lahc-metrics-{input.split(".")[0]}.json', 'w') as f:
-            f.write(json.dumps(lahc_metrics))
+    mip_metrics = {
+        'hypervolume': hypervolume_mip
+    }
 
-    with open(f'../graphics/tables/nsga-metrics-{input.split(".")[0]}.json', 'w') as f:
-            f.write(json.dumps(nsgaII_metrics))
+    print("##################### LAHC METRICS")
+    print(lahc_metrics)
+    print("\n##################### NSGA-II METRICS")
+    print(nsgaII_metrics)
+    print("\n##################### MIP METRICS")
+    print(mip_metrics)
+
+    # with open(f'../graphics/tables/lahc-metrics-{input.split(".")[0]}.json', 'w') as f:
+    #     f.write(json.dumps(lahc_metrics))
+
+    # with open(f'../graphics/tables/nsga-metrics-{input.split(".")[0]}.json', 'w') as f:
+    #     f.write(json.dumps(nsgaII_metrics))
+
+    # with open(f'../graphics/tables/mip-metrics-{input.split(".")[0]}.json', 'w') as f:
+    #     f.write(json.dumps(mip_metrics))
 
     ###############################################################################################################################################
 
@@ -281,8 +314,8 @@ def graphics(filename):
     mip_scatter = go.Scatter3d(x=x_axis_mip, y=y_axis_mip, z=z_axis_mip, mode='markers', name='MIP', hovertemplate='<b>Idleness</b>: %{x}'+'<br><b>Deallocated</b>: %{y}<br><b>Standing</b>: %{z}', marker=dict(color='green', size=2))
     # initial_scatter = go.Scatter3d(x=x_axis_initial, y=y_axis_initial, z=z_axis_initial, mode='markers', name='Initial Population', hovertemplate='<b>Idleness</b>: %{x}'+'<br><b>Deallocated</b>: %{y}<br><b>Standing</b>: %{z}')
 
-    fig.add_trace(lahc_multi_scatter)
     fig.add_trace(nsgaII_scatter)
+    fig.add_trace(lahc_multi_scatter)
     fig.add_trace(mip_scatter)
     # fig.add_trace(initial_scatter)
 
@@ -305,4 +338,4 @@ def graphics(filename):
     fig.show()
     # fig.write_image(f"../graphics/{input.split('.')[0]}.png", engine='kaleido')
 
-graphics('instance.json')
+graphics('input-seed-5-size-1000.json')
