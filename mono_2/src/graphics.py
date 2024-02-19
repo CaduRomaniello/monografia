@@ -228,6 +228,18 @@ def graphics(filename):
     # initial_population = [i['objectives'] for i in initial_population]
     # initial_population = remove_objectives_duplicates(initial_population)
 
+    mip_dominates = 0
+    mip_is_dominated = 0
+    for i in range(len(nsgaII_data)):
+        if dominates(mip_data[0], nsgaII_data[i]):
+            mip_dominates += 1
+        elif dominates(nsgaII_data[i], mip_data[0]):
+            mip_is_dominated += 1
+
+    print(f'MIP dominates {mip_dominates} solutions')
+    print(f'MIP is dominated by {mip_is_dominated} solutions')
+    print(f'Total solutions of NSGAII algorithm: {len(nsgaII_data)}')
+
     ###############################################################################################################################################
 
     x_axis_lahc_multi = [i.idleness for i in lahc_multi_data]
