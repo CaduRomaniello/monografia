@@ -21,6 +21,14 @@ def normalize_values(values_1, values_2, values_3):
            [((value - min_value) / (max_value - min_value)) if (max_value - min_value != 0) else 1 for value in values_2],\
            [((value - min_value) / (max_value - min_value)) if (max_value - min_value != 0) else 1 for value in values_3]
 
+def normalize_values_epsilon(values_1, values_2, values_3, values_4):
+    max_value = max(max(values_1), max(values_2), max(values_3), max(values_4))
+    min_value = min(min(values_1), min(values_2), min(values_3), min(values_4))
+    return [((value - min_value) / (max_value - min_value)) if (max_value - min_value != 0) else 1 for value in values_1],\
+           [((value - min_value) / (max_value - min_value)) if (max_value - min_value != 0) else 1 for value in values_2],\
+           [((value - min_value) / (max_value - min_value)) if (max_value - min_value != 0) else 1 for value in values_3],\
+           [((value - min_value) / (max_value - min_value)) if (max_value - min_value != 0) else 1 for value in values_4]
+
 def nondominated_sort(solutions):
     fronts = []
     domination_count = [0] * len(solutions)
@@ -196,6 +204,17 @@ def graphics(filename):
     nsgaII_data = remove_objectives_duplicates(nsgaII_data)
     pareto_front = nondominated_sort(nsgaII_data)[0]
     nsgaII_data = [nsgaII_data[i] for i in pareto_front]
+
+    epsilon_data = []
+    with open(f'../json/output/epsilon/{filename}-params-epsilon.json', 'r') as file:
+        data = json.load(file)
+        print(data[0])
+        data = [Objectives(i["idleness"], i["deallocated"], i["standing"]) for i in data[0]]
+        epsilon_data = epsilon_data + data
+    epsilon_data = remove_objectives_duplicates(epsilon_data)
+    pareto_front = nondominated_sort(epsilon_data)[0]
+    epsilon_data = [epsilon_data[i] for i in pareto_front]
+    number_of_solutions_epsilon = len(epsilon_data)
     
     # lahc_multi_data[0] = [Objectives(i["idleness"], i["deallocated"], i["standing"]) for i in lahc_multi_data[0]]
     # lahc_multi_data = remove_objectives_duplicates(lahc_multi_data[0])
@@ -223,13 +242,20 @@ def graphics(filename):
     y_axis_mip = [i.deallocated for i in mip_data]
     z_axis_mip = [i.standing for i in mip_data]
 
+    x_axis_epsilon = [i.idleness for i in epsilon_data]
+    y_axis_epsilon = [i.deallocated for i in epsilon_data]
+    z_axis_epsilon = [i.standing for i in epsilon_data]
+
     # x_axis_initial = [i.idleness for i in initial_population]
     # y_axis_initial = [i.deallocated for i in initial_population]
     # z_axis_initial = [i.standing for i in initial_population]
 
-    x_axis_lahc_multi, x_axis_nsgaII, x_axis_mip = normalize_values(x_axis_lahc_multi, x_axis_nsgaII, x_axis_mip)
-    y_axis_lahc_multi, y_axis_nsgaII, y_axis_mip = normalize_values(y_axis_lahc_multi, y_axis_nsgaII, y_axis_mip)
-    z_axis_lahc_multi, z_axis_nsgaII, z_axis_mip = normalize_values(z_axis_lahc_multi, z_axis_nsgaII, z_axis_mip)
+    # x_axis_lahc_multi, x_axis_nsgaII, x_axis_mip = normalize_values(x_axis_lahc_multi, x_axis_nsgaII, x_axis_mip)
+    # y_axis_lahc_multi, y_axis_nsgaII, y_axis_mip = normalize_values(y_axis_lahc_multi, y_axis_nsgaII, y_axis_mip)
+    # z_axis_lahc_multi, z_axis_nsgaII, z_axis_mip = normalize_values(z_axis_lahc_multi, z_axis_nsgaII, z_axis_mip)
+    x_axis_lahc_multi, x_axis_nsgaII, x_axis_mip, x_axis_epsilon = normalize_values_epsilon(x_axis_lahc_multi, x_axis_nsgaII, x_axis_mip, x_axis_epsilon)
+    y_axis_lahc_multi, y_axis_nsgaII, y_axis_mip, y_axis_epsilon = normalize_values_epsilon(y_axis_lahc_multi, y_axis_nsgaII, y_axis_mip, y_axis_epsilon)
+    z_axis_lahc_multi, z_axis_nsgaII, z_axis_mip, z_axis_epsilon = normalize_values_epsilon(z_axis_lahc_multi, z_axis_nsgaII, z_axis_mip, z_axis_epsilon)
 
     ###############################################################################################################################################
 
@@ -241,6 +267,14 @@ def graphics(filename):
     for i in range(len(x_axis_nsgaII)):
         hv_nsgaII_data.append([x_axis_nsgaII[i], y_axis_nsgaII[i], z_axis_nsgaII[i]])
 
+    hv_epsilon_data = []
+    for i in range(len(x_axis_epsilon)):
+        hv_epsilon_data.append([x_axis_epsilon[i], y_axis_epsilon[i], z_axis_epsilon[i]])
+
+    hv_mip_data = []
+    for i in range(len(x_axis_mip)):
+        hv_mip_data.append([x_axis_mip[i], y_axis_mip[i], z_axis_mip[i]])
+
     reference_point = np.array([2.0, 2.0, 2.0])
     hv_calculator = Hypervolume(reference_point)
 
@@ -249,6 +283,12 @@ def graphics(filename):
 
     hypervolume_nsgaII = hv_calculator.do(np.array(hv_nsgaII_data))
     print("Hypervolume NSGA-II:", hypervolume_nsgaII)
+
+    hypervolume_epsilon = hv_calculator.do(np.array(hv_epsilon_data))
+    print("Hypervolume Epsilon:", hypervolume_epsilon)
+
+    hypervolume_mip = hv_calculator.do(np.array(hv_mip_data))
+    print("Hypervolume MIP:", hypervolume_mip)
 
     lahc_metrics = {
         'hypervolume': hypervolume_lahc,
@@ -266,31 +306,160 @@ def graphics(filename):
         'mean_solutions': sum(number_of_solutions_nsgaII) / len(number_of_solutions_nsgaII)
     }
 
-    with open(f'../graphics/tables/lahc-metrics-{input.split(".")[0]}.json', 'w') as f:
-            f.write(json.dumps(lahc_metrics))
+    epsilon_metrics = {
+        'hypervolume': hypervolume_epsilon,
+        'number_of_solutions': number_of_solutions_epsilon,
+        'solutions': number_of_solutions_epsilon
+    }
 
-    with open(f'../graphics/tables/nsga-metrics-{input.split(".")[0]}.json', 'w') as f:
-            f.write(json.dumps(nsgaII_metrics))
+    # with open(f'../graphics/tables/lahc-metrics-{input.split(".")[0]}.json', 'w') as f:
+    #         f.write(json.dumps(lahc_metrics))
+
+    # with open(f'../graphics/tables/nsga-metrics-{input.split(".")[0]}.json', 'w') as f:
+    #         f.write(json.dumps(nsgaII_metrics))
+
+    # with open(f'../graphics/tables/epsilon-metrics-{input.split(".")[0]}.json', 'w') as f:
+    #         f.write(json.dumps(epsilon_metrics))
 
     ###############################################################################################################################################
 
     fig = go.Figure()
 
-    lahc_multi_scatter = go.Scatter3d(x=x_axis_lahc_multi, y=y_axis_lahc_multi, z=z_axis_lahc_multi, mode='markers', name='MOLA', hovertemplate='<b>Idleness</b>: %{x}'+'<br><b>Deallocated</b>: %{y}<br><b>Standing</b>: %{z}', marker=dict(color='red', size=2))
-    nsgaII_scatter = go.Scatter3d(x=x_axis_nsgaII, y=y_axis_nsgaII, z=z_axis_nsgaII, mode='markers', name='NSGA-II', hovertemplate='<b>Idleness</b>: %{x}'+'<br><b>Deallocated</b>: %{y}<br><b>Standing</b>: %{z}', marker=dict(color='blue', size=2))
-    mip_scatter = go.Scatter3d(x=x_axis_mip, y=y_axis_mip, z=z_axis_mip, mode='markers', name='MIP', hovertemplate='<b>Idleness</b>: %{x}'+'<br><b>Deallocated</b>: %{y}<br><b>Standing</b>: %{z}', marker=dict(color='green', size=2))
-    # initial_scatter = go.Scatter3d(x=x_axis_initial, y=y_axis_initial, z=z_axis_initial, mode='markers', name='Initial Population', hovertemplate='<b>Idleness</b>: %{x}'+'<br><b>Deallocated</b>: %{y}<br><b>Standing</b>: %{z}')
+    lahc_multi_scatter = go.Scatter3d(
+        x=x_axis_lahc_multi,
+        y=y_axis_lahc_multi,
+        z=z_axis_lahc_multi,
+        mode='markers',
+        name='MOLA',
+        hovertemplate='<b>Idleness</b>: %{x}'+'<br><b>Deallocated</b>: %{y}<br><b>Standing</b>: %{z}',
+        marker=dict(
+            color='red',
+            size=5,
+            symbol='diamond-open'
+        ),
+        showlegend=True
+    )
+    lahc_multi_scatter_legend = go.Scatter3d(
+        x=[None],
+        y=[None],
+        z=[None],
+        mode='markers',
+        name='MOLA',
+        marker=dict(
+            color='red',
+            size=10,
+            symbol='diamond',
+            opacity=0
+        ),
+        showlegend=True
+    )
+
+    nsgaII_scatter = go.Scatter3d(
+        x=x_axis_nsgaII,
+        y=y_axis_nsgaII,
+        z=z_axis_nsgaII,
+        mode='markers',
+        name='NSGA-II',
+        hovertemplate='<b>Idleness</b>: %{x}'+'<br><b>Deallocated</b>: %{y}<br><b>Standing</b>: %{z}',
+        marker=dict(
+            color='blue',
+            size=5,
+            symbol='circle-open'
+        ),
+        showlegend=True
+    )
+    nsgaII_scatter_legend = go.Scatter3d(
+        x=[None],
+        y=[None],
+        z=[None],
+        mode='markers',
+        name='NSGA-II',
+        marker=dict(
+            color='blue',
+            size=10,
+            symbol='circle',
+            opacity=0
+        ),
+        showlegend=True
+    )
+
+    mip_scatter = go.Scatter3d(
+        x=x_axis_mip,
+        y=y_axis_mip,
+        z=z_axis_mip,
+        mode='markers',
+        name='MIP',
+        hovertemplate='<b>Idleness</b>: %{x}'+'<br><b>Deallocated</b>: %{y}<br><b>Standing</b>: %{z}',
+        marker=dict(
+            color='green',
+            size=5,
+            symbol='square'
+        ),
+        showlegend=True
+    )
+    mip_scatter_legend = go.Scatter3d(
+        x=[None],
+        y=[None],
+        z=[None],
+        mode='markers',
+        name='MIP',
+        marker=dict(
+            color='green',
+            size=10,
+            symbol='square',
+            opacity=0
+        ),
+        showlegend=True
+    )
+
+    epsilon_scatter = go.Scatter3d(
+        x=x_axis_epsilon,
+        y=y_axis_epsilon,
+        z=z_axis_epsilon,
+        mode='markers',
+        name='Epsilon restrito',
+        hovertemplate='<b>Idleness</b>: %{x}'+'<br><b>Deallocated</b>: %{y}<br><b>Standing</b>: %{z}',
+        marker=dict(
+            color='black',
+            size=3,
+            symbol='x'
+        ),
+        showlegend=True
+    )
+    epsilon_scatter_legend = go.Scatter3d(
+        x=[None],
+        y=[None],
+        z=[None],
+        mode='markers',
+        name='Restricted epsilon',
+        marker=dict(
+            color='black',
+            size=10,
+            symbol='x',
+            opacity=0
+        ),
+        showlegend=True
+    )
 
     fig.add_trace(lahc_multi_scatter)
+    # fig.add_trace(lahc_multi_scatter_legend)
+
     fig.add_trace(nsgaII_scatter)
+    # fig.add_trace(nsgaII_scatter_legend)
+
+    fig.add_trace(epsilon_scatter)
+    # fig.add_trace(epsilon_scatter_legend)
+
     fig.add_trace(mip_scatter)
+    # fig.add_trace(mip_scatter_legend)
+
     # fig.add_trace(initial_scatter)
 
-    fig.update_layout(scene=dict(xaxis_title='Ociosa (Idl)', yaxis_title='Desalocado (Dea)', zaxis_title='Em pé (Sta)'))
+    fig.update_layout(scene=dict(xaxis_title='Ociosidade (Idl)', yaxis_title='Desalocação (Dea)', zaxis_title='Em pé (Sta)'))
 
-    fig.update_layout(title=f'Solutions Comparison ({input})')
+    fig.update_layout(title=f'Comparação das soluções ({input})')
 
-    fig.update_layout(legend=dict(title='Algorithms'))
+    fig.update_layout(legend=dict(title='Algoritmos', itemsizing='constant', itemclick='toggleothers'))
 
     # fig = go.Figure(data=[
     #         go.Scatter3d(x=x_axis_nsgaII, y=y_axis_nsgaII, z=z_axis_nsgaII, mode='markers', marker=dict(color='red', size=7)),
@@ -302,7 +471,8 @@ def graphics(filename):
     # fig.update_layout(scene=dict(xaxis_title='Idleness', yaxis_title='Deallocated', zaxis_title='Standing'))
 
     # Exibir o gráfico
+    print(len(epsilon_data))
     fig.show()
     # fig.write_image(f"../graphics/{input.split('.')[0]}.png", engine='kaleido')
 
-graphics('instance.json')
+graphics('input-seed-5-size-1000.json')
